@@ -1,11 +1,11 @@
 import ClientLayout from "@/components/ClientLayout";
 import './globals.css'
-import Section from "@/components/Section";
 import Intro from "@/components/Intro";
 import CareerSection from "@/components/CareerSection";
 import ResumeSection from "@/components/ResumeSection";
-import SkillsGlobeCanvas from "@/components/Tag";
+import SkillsSection from "@/components/SkillsSection";
 import { Tag } from "react-3d-tag-sphere";
+import ProjectSection from "@/components/ProjectSection";
 
 export const metadata = {
   title: "MeFolio",
@@ -13,7 +13,7 @@ export const metadata = {
 };
 
 export default function RootLayout() {
-  const projects = ['Budget Tracker', 'Weather App', 'E-commerce App', 'Blog App'];
+  // const projects = ['Budget Tracker', 'Weather App', 'E-commerce App', 'Blog App'];
   const skills:Tag[] = [
     { src: 'logos/python.svg', size: 40 },
     { src: 'logos/javascript.svg', size: 40 },
@@ -42,11 +42,15 @@ export default function RootLayout() {
     { src: 'logos/vscode.svg', size: 40 },
   ];
 
+  const languages = ['Python', 'JavaScript', 'Dart', 'SQL', 'HTML', 'CSS'];
+  const tools = ['React', 'Next.js', 'Node.js', 'Express.js', 'Firebase', 'PostgreSQL', 'MongoDB', 'Django', 'Flask'];
+  const frameworks = ['React Native', 'Flutter', 'Expo', 'Django REST', 'Nest.js'];
+
   const sections = [
     { id: "about", content: <Intro title="A Software Engineer and UI/UX Designer" location="based in Nairobi, Kenya."  /> },
     { id: "career", content: <CareerSection/> },
-    { id: "skills", content: <SkillsGlobeCanvas tags={skills}/> },
-    { id: "projects", content: <Section items={projects} title="Projects"/> },
+    { id: "skills", content: <SkillsSection tags={skills} languages={languages} tools={tools} frameworks={frameworks} /> },
+    { id: "projects", content: <ProjectSection/> },
     { id: "resume", content: <ResumeSection /> },
     { id: "inquiries", content: <p>Contact Me</p> },
   ];

@@ -11,7 +11,7 @@ export default function Intro({ title, location }: { title: string, location:str
                 initial={{ opacity: 0, y: -50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
-                className="text-5xl font-bold mb-4"
+                className="text-6xl font-bold mb-4"
             >
                 Hi 👋🏼
             </motion.h1>
@@ -19,7 +19,7 @@ export default function Intro({ title, location }: { title: string, location:str
                 initial={{ opacity: 0, y: -50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.8 }}
-                className="text-4xl font-semibold mb-2"
+                className="text-6xl font-semibold mb-2"
             >
                 My name is Bumho Nisubire
             </motion.h2>

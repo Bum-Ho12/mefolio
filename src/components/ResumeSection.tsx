@@ -5,7 +5,7 @@ import { MdOutlineFileDownload } from "react-icons/md";
 
 export default function ResumeSection() {
     return (
-        <section className="h-screen mt-5 w-full max-w-2xl flex flex-col items-center gap-6">
+        <section className="min-h-screen w-full max-w-2xl flex flex-col justify-center items-center gap-6">
             <motion.h3
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -19,7 +19,7 @@ export default function ResumeSection() {
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2, duration: 0.5 }}
-                className="text-lg"
+                className="text-lg text-center"
             >
                 Download Resume in PDF format  by clicking the button below
             </motion.p>
