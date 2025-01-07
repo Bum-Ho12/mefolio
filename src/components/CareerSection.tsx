@@ -48,7 +48,7 @@ export default function CareerSection() {
             className="relative flex h-screen bg-black text-white px-4 w-full"
         >
             <aside
-                className={`sticky top-20 left-0 h-max ${
+                className={`sticky top-24 left-0 h-max ${
                     isSidebarVisible ? "opacity-100" : "opacity-0"
                 } transition-opacity duration-300`}
             >
@@ -71,15 +71,32 @@ export default function CareerSection() {
                     <div
                         key={section}
                         id={section}
-                        className="career-subsection snap-start min-h-screen flex items-center justify-center border-b border-gray-700"
+                        className="career-subsection snap-start min-h-screen flex border-b border-gray-700 pl-4 lg:pl-16 pt-24"
                     >
                         <div>
-                            <h2 className="text-3xl font-bold">
+                            {/* <h2 className="text-4xl font-bold">
                                 {section.charAt(0).toUpperCase() + section.slice(1)}
+                            </h2> */}
+                            {/* title */}
+                            <h2 className=" text-3xl whitespace-pre-line font-semibold">
+                                {section === "education"
+                                    ? `BSC Computer Technology`
+                                    : section === "work"
+                                    ? "Software Developer at XYZ Company"
+                                    : "Certified JavaScript Developer"}
                             </h2>
+                            {/* subtitle */}
                             <p className="mt-4 text-lg whitespace-pre-line">
                                 {section === "education"
-                                    ? `BSC Computer Technology\nMultimedia University of Kenya • Sept 2019`
+                                    ? `Multimedia University of Kenya • Sept 2019`
+                                    : section === "work"
+                                    ? "Software Developer at XYZ Company"
+                                    : "Certified JavaScript Developer"}
+                            </p>
+                            {/* description */}
+                            <p className="mt-4 text-lg whitespace-pre-line">
+                                {section === "education"
+                                    ? `Multimedia University of Kenya • Sept 2019`
                                     : section === "work"
                                     ? "Software Developer at XYZ Company"
                                     : "Certified JavaScript Developer"}

@@ -6,6 +6,7 @@ import ResumeSection from "@/components/ResumeSection";
 import SkillsSection from "@/components/SkillsSection";
 import { Tag } from "react-3d-tag-sphere";
 import ProjectSection from "@/components/ProjectSection";
+import ContactSection from "@/components/ContactSection";
 
 export const metadata = {
   title: "MeFolio",
@@ -52,7 +53,7 @@ export default function RootLayout() {
     { id: "skills", content: <SkillsSection tags={skills} languages={languages} tools={tools} frameworks={frameworks} /> },
     { id: "projects", content: <ProjectSection/> },
     { id: "resume", content: <ResumeSection /> },
-    { id: "inquiries", content: <p>Contact Me</p> },
+    { id: "inquiries", content: <ContactSection /> },
   ];
 
   return (

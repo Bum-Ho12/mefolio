@@ -54,8 +54,9 @@ const SkillsSection: React.FC<SkillsGlobeCanvasProps> = ({ tags, tools, language
                     </div>
 
                     {/* Skills Table Section */}
-                    <div className="w-full lg:w-1/3 space-y-8 max-h-screen overflow-y-auto scrollbar-hide">
-                        <table className="min-w-full table-auto text-left">
+                    <div className="w-full lg:w-1/3 space-y-8 max-h-screen overflow-y-auto scrollbar-hide overflow-hidden relative group">
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg border border-white/10 rounded-3xl" />
+                        <table className=" relative min-w-full table-auto text-left">
                             <thead>
                                 <tr>
                                     <th className="p-4 border-b text-lg">Languages</th>

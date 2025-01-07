@@ -55,7 +55,22 @@ export default function ClientLayout({ sections }: { sections: SectionData[] }) 
     }, [sectionIds]);
 
     return (
-        <div className="max-h-screen overflow-y-auto scrollbar-hide">
+        <div className="relative max-h-screen h-screen overflow-y-auto snap-mandatory snap-y custom-scrollbar lg:pl-10">
+            {/* Animated Ambient Radial Blue Background */}
+            <motion.div
+                className="absolute inset-0 bg-gradient-radial from-blue-500/60 to-transparent z-0"
+                style={{
+                    background: 'radial-gradient(circle, rgba(59,130,246,0.6) 0%, rgba(255,255,255,0) 80%)',
+                }}
+                animate={{
+                    opacity: [0.2, 0.55, 0.2], // Pulse effect: opacity increases and decreases
+                }}
+                transition={{
+                    duration: 13, // Duration of one pulse cycle
+                    repeat: Infinity, // Repeat the animation infinitely
+                    ease: "easeInOut", // Smooth easing
+                }}
+            />
             <div className="fixed left-0 right-0 flex justify-center z-50">
                 <motion.div
                     initial={{ opacity: 0, y: -50 }}
@@ -111,7 +126,7 @@ export default function ClientLayout({ sections }: { sections: SectionData[] }) 
 
             <div
                 ref={containerRef}
-                className="h-screen overflow-y-auto snap-mandatory snap-y"
+                className="h-screen overflow-y-auto snap-mandatory snap-y relative"
                 style={{ scrollBehavior: "smooth" }}
             >
                 {sections.map((section) => (
@@ -128,11 +143,11 @@ export default function ClientLayout({ sections }: { sections: SectionData[] }) 
                     </motion.section>
                 ))}
 
-                <footer className="bg-black text-center py-4">
+                {/* <footer className="bg-black text-center py-4">
                     <p className="text-sm text-gray-400">
                         &copy; {new Date().getFullYear()} Bumho Nisubire. All rights reserved.
                     </p>
-                </footer>
+                </footer> */}
             </div>
         </div>
     );

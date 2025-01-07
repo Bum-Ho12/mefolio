@@ -28,3 +28,30 @@ body {
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
 }
+
+/* Custom scrollbar for webkit-based browsers */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px; /* Set the scrollbar width */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1); /* Track background */
+  border-radius: 8px; /* Round track edges */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.4); /* Thumb color */
+  border-radius: 8px; /* Round thumb edges */
+  border: 2px solid rgba(255, 255, 255, 0.1); /* Thumb border */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.6); /* Darker on hover */
+}
+
+/* For Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin; /* Makes the scrollbar thin */
+  scrollbar-color: rgba(0, 0, 0, 0.4) rgba(0, 0, 0, 0.1); /* Thumb and track colors */
+}
+

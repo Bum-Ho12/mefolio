@@ -119,31 +119,31 @@ const ProjectSection: React.FC = () => {
     const otherProjects = projects.filter(p => !p.featured);
 
     return (
-        <div className="h-full w-full items-center overflow-y-auto max-h-screen scrollbar-hide pt-40 px-4 pb-10">
+        <div className="h-full w-full items-center overflow-y-auto max-h-screen scrollbar-hide pt-24 px-4 pb-10">
             <h2 className="text-4xl font-bold mb-8">Projects</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {featuredProjects.map(project => (
-            <ProjectCard key={project.id} project={project} />
-            ))}
-        </div>
-
-        {otherProjects.length > 0 && (
-            <div className="flex flex-wrap gap-4 justify-center">
-            {otherProjects.map(project => (
-                <div
-                key={project.id}
-                className="w-12 h-12 rounded-full overflow-hidden relative group cursor-pointer"
-                >
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg border border-white/10" />
-                    <img
-                        src={project.image}
-                        alt={project.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform"
-                    />
-                </div>
-            ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                {featuredProjects.map(project => (
+                <ProjectCard key={project.id} project={project} />
+                ))}
             </div>
-        )}
+
+            {otherProjects.length > 0 && (
+                <div className="flex flex-wrap gap-4 justify-center">
+                {otherProjects.map(project => (
+                    <div
+                    key={project.id}
+                    className="w-12 h-12 rounded-full overflow-hidden relative group cursor-pointer"
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg border border-white/10" />
+                        <img
+                            src={project.image}
+                            alt={project.title}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                        />
+                    </div>
+                ))}
+                </div>
+            )}
         </div>
     );
 };
