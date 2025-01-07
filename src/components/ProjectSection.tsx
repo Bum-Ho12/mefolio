@@ -72,7 +72,7 @@ const projects: Project[] = [
 const ProjectCard = ({ project }: { project: Project }) => {
     return (
         <div className={`rounded-3xl overflow-hidden relative group ${
-        project.featured ? 'col-span-1 md:col-span-2 lg:col-span-1' : 'col-span-1'
+        project.featured ? 'col-span-1 md:col-span-1 lg:col-span-1' : 'col-span-1'
         }`}>
         <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg border border-white/10 rounded-3xl" />
 

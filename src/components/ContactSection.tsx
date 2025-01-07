@@ -35,7 +35,7 @@ export default function ContactSection() {
     };
 
     return (
-        <section className="flex flex-col h-full w-full items-center overflow-y-auto max-h-screen scrollbar-hide pt-24 px-4 pb-10 gap-4">
+        <section className="flex flex-col h- bg-black w-full items-center overflow-y-auto max-h-screen scrollbar-hide pt-24 px-4 pb-10 gap-4">
             {/* title */}
             <motion.h3
                 initial={{ opacity: 0 }}
