@@ -15,7 +15,7 @@ export default function ResumeSection({ downloadLink }:Resume) {
     };
 
     return (
-        <section className="min-h-screen w-full max-w-2xl flex flex-col justify-center items-center gap-6">
+        <section className="min-h-screen w-full max-w-2xl flex flex-col justify-center items-center gap-6 px-2">
             <motion.h3
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
