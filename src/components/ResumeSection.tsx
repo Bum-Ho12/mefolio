@@ -4,11 +4,15 @@ import { Resume } from '@/utils/types';
 import { motion } from 'framer-motion';
 import { MdOutlineFileDownload } from "react-icons/md";
 
-export default function ResumeSection({ downloadLink }:Resume) {
+interface ResumeSectionProps {
+    resume: Resume;
+}
+
+const ResumeSection: React.FC<ResumeSectionProps> = ({ resume }) => {
 
     const handleDownload = () => {
-        if (downloadLink) {
-            window.open(downloadLink, '_blank', 'noopener,noreferrer');
+        if (resume.file?.asset) {
+            window.open(resume.file.asset.url ||resume.downloadLink , '_blank', 'noopener,noreferrer');
         } else {
             console.error('Download link is not provided');
         }
@@ -46,3 +50,5 @@ export default function ResumeSection({ downloadLink }:Resume) {
         </section>
     );
 }
+
+export default ResumeSection;

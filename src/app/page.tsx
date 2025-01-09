@@ -10,30 +10,41 @@ import SkillsSection from "@/components/SkillsSection";
 import ProjectSection from "@/components/ProjectSection";
 import ContactSection from "@/components/ContactSection";
 import { useEffect, useState } from "react";
-import { Career, Intro as IntroType, Projects, Skills } from "@/utils/types"; // Adjust import path as needed
+import { Career, Intro as IntroType, Projects, Skills, Resume } from "@/utils/types"; // Adjust import path as needed
+import LoadingScreen from '@/components/LoadingScreen';
 
 interface PageData {
   intro: IntroType;
   career: Career;
   projects: Projects;
   skills: Skills;
-  resume: {
-    downloadLink: string;
-  };
+  resume: Resume;
 }
 
 export default function HomeContent() {
   const [pageData, setPageData] = useState<PageData | null>(null);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Track individual fetch progress
+        const totalSteps = 5; // One for each fetch
+        let completedSteps = 0;
+
+        const updateProgress = () => {
+          completedSteps++;
+          setLoadingProgress((completedSteps / totalSteps) * 100);
+        };
+
+        // Fetch all data with progress tracking
         const [intro, career, projects, skills, resume] = await Promise.all([
-          getIntro(),
-          getCareer(),
-          getProjects(),
-          getSkills(),
-          getResume()
+          getIntro().then(res => { updateProgress(); return res; }),
+          getCareer().then(res => { updateProgress(); return res; }),
+          getProjects().then(res => { updateProgress(); return res; }),
+          getSkills().then(res => { updateProgress(); return res; }),
+          getResume().then(res => { updateProgress(); return res; })
         ]);
 
         setPageData({ intro, career, projects, skills, resume });
@@ -46,18 +57,26 @@ export default function HomeContent() {
     fetchData();
   }, []);
 
-  if (!pageData) return (
-    <div className="h-screen flex items-center justify-center">
-      <div>Loading...</div>
-    </div>
-  );
+  const handleLoadingComplete = () => {
+    setIsLoading(false);
+  };
+
+  if (isLoading || !pageData) {
+    return (
+      <LoadingScreen
+        progress={loadingProgress}
+        isDataLoaded={!!pageData}
+        onLoadingComplete={handleLoadingComplete}
+      />
+    );
+  }
 
   const sections = [
     { id: "about", content: <Intro intro={pageData.intro} /> },
     { id: "career", content: <CareerSection career={pageData.career} /> },
     { id: "skills", content: <SkillsSection skills={pageData.skills} /> },
     { id: "projects", content: <ProjectSection projects={pageData.projects} /> },
-    { id: "resume", content: <ResumeSection downloadLink={pageData.resume.downloadLink} /> },
+    { id: "resume", content: <ResumeSection resume={pageData.resume} /> },
     { id: "inquiries", content: <ContactSection intro={pageData.intro} /> },
   ];
 

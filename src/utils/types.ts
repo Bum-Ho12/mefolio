@@ -69,5 +69,10 @@ export interface Skills {
 }
 
 export interface Resume {
-    downloadLink: string;
+    file?: {
+        asset: {
+            url: string; // URL for the uploaded file
+        };
+    };
+    downloadLink?: string; // Optional manual download link
 }

@@ -83,6 +83,11 @@ export async function getSkills(): Promise<Skills> {
 
 export async function getResume(): Promise<Resume> {
     const query = `*[_type == "resume"][0] {
+        file {
+            asset->{
+                url
+            }
+        },
         downloadLink
     }`;
     return sanityClient.fetch(query);

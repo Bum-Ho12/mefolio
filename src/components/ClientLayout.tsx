@@ -19,7 +19,7 @@ export default function ClientLayout({ sections }: { sections: SectionData[] }) 
     const scrollToSection = (id: string) => {
         if (isScrolling.current) return;
         isScrolling.current = true;
-        
+
         const element = document.getElementById(id);
         if (element) {
             element.scrollIntoView({ behavior: "smooth" });
