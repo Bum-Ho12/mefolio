@@ -6,6 +6,7 @@ import { MdOutlineMail  } from "react-icons/md";
 import { IoLogoGithub, IoLogoLinkedin, IoCall } from "react-icons/io5";
 import { FaDev } from "react-icons/fa";
 import { Intro as IntroType } from '@/utils/types';
+import MeStorButton from './store/MeStorButton';
 
 export default function Intro({ intro }: { intro: IntroType }) {
     // Find specific social links
@@ -51,6 +52,7 @@ export default function Intro({ intro }: { intro: IntroType }) {
                 >
                     {intro.location}
                 </motion.p>
+                <MeStorButton/>
                 <div className="flex gap-4 justify-center w-full items-center mt-10">
                     {emailLink && (
                         <a

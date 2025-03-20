@@ -76,3 +76,98 @@ export interface Resume {
     };
     downloadLink?: string; // Optional manual download link
 }
+
+
+export interface StoreItem {
+    id: {
+        current: string;
+        _type: string;
+    };
+    name: string;
+    description: string;
+    price: number;
+    mainImage: string;
+    images?: string[];
+    inStock: boolean;
+    category: 'app' | 'game' | 'merch';
+    featured?: boolean;
+    releaseDate?: string;
+
+    // App and Game specific fields
+    platform?: string[];
+    appStoreUrl?: string;
+    playStoreUrl?: string;
+    webAppUrl?: string;
+    downloadUrl?: string;
+    version?: string;
+    features?: string[];
+
+    // Merch specific fields
+    size?: string[];
+    color?: Array<{
+        name: string;
+        hex: string;
+    }>;
+    material?: string;
+    weight?: number;
+}
+
+export interface StoreData {
+    title: string;
+    description?: string;
+    heroTitle: string;
+    heroSubtitle: string;
+    heroImage: string;
+    items: StoreItem[];
+}
+
+// Interface for About Page data
+export interface AboutData {
+    title: string;
+    heroImage: string;
+    heroTitle: string;
+    heroSubtitle: string;
+    content: string|number[];
+    team: {
+        name: string;
+        role: string;
+        bio: string;
+        image: string;
+    }[];
+}
+
+// Interface for Privacy Policy data
+export interface PrivacyPolicyData {
+    title: string;
+    heroImage: string;
+    heroTitle: string;
+    heroSubtitle: string;
+    lastUpdated: string;
+    content: string|number[];
+}
+
+// Interface for Terms & Conditions data
+export interface TermsConditionsData {
+    title: string;
+    heroImage: string;
+    heroTitle: string;
+    heroSubtitle: string;
+    lastUpdated: string;
+    content: string|number[];
+}
+
+// Interface for Contact page data
+export interface ContactData {
+    title: string;
+    heroImage: string;
+    heroTitle: string;
+    heroSubtitle: string;
+    email: string;
+    phone: string;
+    address: string;
+    socialLinks: {
+        platform: string;
+        url: string;
+    }[];
+    formIntro: string;
+}
