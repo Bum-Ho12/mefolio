@@ -5,14 +5,14 @@ const nextConfig: NextConfig = {
   images: {
     domains: ['cdn.sanity.io'], // Add your allowed image domains here
   },
-  async rewrites() {
-    return [
-      {
-        source: "/store/:path*",
-        destination: "/store/:path*", // Ensure store routes work
-      },
-    ];
-  },
+  // async rewrites() {
+  //   return [
+  //     {
+  //       source: "/store/:path*",
+  //       destination: "/store/:path*", // Ensure store routes work
+  //     },
+  //   ];
+  // },
 };
 
 export default nextConfig;
