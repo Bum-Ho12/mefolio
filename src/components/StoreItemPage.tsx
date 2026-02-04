@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { ArrowLeft, ExternalLink, Download, Heart, Phone, Mail } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Download, Heart, Phone, Mail, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { StoreItem } from '@/utils/types';
@@ -88,7 +88,7 @@ export default function StoreItemPage({ item }: StoreItemPageProps) {
     }
 
     return (
-        <div  className="min-h-screen bg-black text-white flex flex-col justify-between">
+        <div className="min-h-screen bg-black text-white flex flex-col justify-between">
             {/* Back button and wishlist */}
             <div className="fixed top-0 left-0 right-0 z-10 bg-black/80 backdrop-blur-md">
                 <div className="max-w-7xl mx-auto px-4 py-4 flex items-center">
@@ -132,9 +132,8 @@ export default function StoreItemPage({ item }: StoreItemPageProps) {
                                     {images.map((image, index) => (
                                         <button
                                             key={index}
-                                            className={`w-20 h-20 rounded-xl overflow-hidden border-2 flex-shrink-0 ${
-                                                selectedImage === index ? 'border-blue-500' : 'border-white/10 hover:border-white/30'
-                                            }`}
+                                            className={`w-20 h-20 rounded-xl overflow-hidden border-2 flex-shrink-0 ${selectedImage === index ? 'border-blue-500' : 'border-white/10 hover:border-white/30'
+                                                }`}
                                             onClick={() => setSelectedImage(index)}
                                         >
                                             <div className="relative w-full h-full">
@@ -363,6 +362,19 @@ export default function StoreItemPage({ item }: StoreItemPageProps) {
                                                     Download
                                                 </a>
                                             )}
+
+                                            {/* Privacy policy section */}
+                                            {item.privacyPolicy && (item.category === 'app' || item.category === 'game') && (
+                                                <div className="mt-4">
+                                                    <Link
+                                                        href={`/store/${item.id.current}/privacy`}
+                                                        className="text-blue-400 hover:text-blue-300 flex items-center gap-2"
+                                                    >
+                                                        <Shield className="w-5 h-5" />
+                                                        View Privacy Policy
+                                                    </Link>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -433,7 +445,7 @@ export default function StoreItemPage({ item }: StoreItemPageProps) {
                         </div>
                     </div>
                     <div className="border-t border-white/10 mt-8 pt-8 text-center text-gray-400">
-                        <p>© {new Date().getFullYear()} My Store. All rights reserved.</p>
+                        <p>© <span suppressHydrationWarning>{new Date().getFullYear()}</span> My Store. All rights reserved.</p>
                     </div>
                 </div>
             </footer>

@@ -42,3 +42,5 @@ next-env.d.ts
 
 .vercel
 # store/
+deploy.ps1
+deploy.sh

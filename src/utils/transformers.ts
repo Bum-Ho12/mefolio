@@ -12,10 +12,10 @@ export const convertSkillsToTags = (skills: Skills): Tag[] => {
     // Filter out skills without icons and map to Tag format
     return allSkills
         .filter(skill => skill.icon?.url)
-        .map((skill) => ({
+        .map((skill, index) => ({
             src: skill.icon!.url,
             size: 40, // You can adjust this value
-            phi: Math.random() * 360, // Random angle for initial position
-            theta: Math.random() * 360, // Random angle for initial position
+            phi: (index * 47) % 360, // Deterministic angle for initial position
+            theta: (index * 31) % 360, // Deterministic angle for initial position
         }));
 };

@@ -15,8 +15,8 @@ const MeStoreFooter = (
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-            // Fetch contact page data
-            const fetchData = async () => {
+        // Fetch contact page data
+        const fetchData = async () => {
             try {
                 const data = await getContactPage();
                 setContactData(data);
@@ -25,15 +25,15 @@ const MeStoreFooter = (
                 console.error('Error fetching contact page data:', error);
                 setIsLoading(false);
             }
-            };
+        };
 
-            // Simulate loading progress
+        // Simulate loading progress
         const interval = setInterval(() => {
-            }, 200);
+        }, 200);
 
-            fetchData();
+        fetchData();
 
-            return () => clearInterval(interval);
+        return () => clearInterval(interval);
     }, []);
 
     return (
@@ -102,7 +102,7 @@ const MeStoreFooter = (
                     </div>
                 </div>
                 <div className="border-t border-white/10 mt-8 pt-8 text-center text-gray-400">
-                    <p>© {new Date().getFullYear()} My Store. All rights reserved.</p>
+                    <p>© <span suppressHydrationWarning>{new Date().getFullYear()}</span> My Store. All rights reserved.</p>
                 </div>
             </div>
         </footer>

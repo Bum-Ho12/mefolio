@@ -102,6 +102,9 @@ export interface StoreItem {
     version?: string;
     features?: string[];
 
+    // New Privacy Policy Reference
+    privacyPolicy?: PrivacyPolicyData;
+
     // Merch specific fields
     size?: string[];
     color?: Array<{
@@ -138,12 +141,14 @@ export interface AboutData {
 
 // Interface for Privacy Policy data
 export interface PrivacyPolicyData {
+    _id: string;
     title: string;
     heroImage: string;
     heroTitle: string;
     heroSubtitle: string;
     lastUpdated: string;
-    content: string|number[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    content: any[];
 }
 
 // Interface for Terms & Conditions data

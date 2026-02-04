@@ -29,19 +29,19 @@ export default function ContactSection({ intro }: { intro: IntroType }) {
 
             <div className="flex gap-4 justify-center items-center">
                 {emailLink && (
-                <a href={emailLink} className="p-2 bg-white rounded-full shadow-lg text-black hover:bg-gray-100">
-                    <MdOutlineMail size={20} />
-                </a>
+                    <a href={emailLink} className="p-2 bg-white rounded-full shadow-lg text-black hover:bg-gray-100">
+                        <MdOutlineMail size={20} />
+                    </a>
                 )}
                 {linkedinLink && (
-                <a href={linkedinLink} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-full shadow-lg text-black hover:bg-gray-100">
-                    <IoLogoLinkedin size={20} />
-                </a>
+                    <a href={linkedinLink} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-full shadow-lg text-black hover:bg-gray-100">
+                        <IoLogoLinkedin size={20} />
+                    </a>
                 )}
                 {phoneLink && (
-                <a href={phoneLink} className="p-2 bg-white rounded-full shadow-lg text-black hover:bg-gray-100">
-                    <IoCall size={20} />
-                </a>
+                    <a href={phoneLink} className="p-2 bg-white rounded-full shadow-lg text-black hover:bg-gray-100">
+                        <IoCall size={20} />
+                    </a>
                 )}
             </div>
 
@@ -61,7 +61,7 @@ export default function ContactSection({ intro }: { intro: IntroType }) {
             </p>
 
             <p className="text-sm text-gray-400  mt-10">
-                &copy; {new Date().getFullYear()} Bumho Nisubire. All rights reserved.
+                &copy; <span suppressHydrationWarning>{new Date().getFullYear()}</span> Bumho Nisubire. All rights reserved.
             </p>
         </section>
     );

@@ -139,7 +139,16 @@ export async function getStoreItem(slug: string): Promise<StoreItem> {
         size,
         color,
         material,
-        weight
+        weight,
+        "privacyPolicy": privacyPolicy->{
+            _id,
+            title,
+            "heroImage": heroImage.asset->url,
+            heroTitle,
+            heroSubtitle,
+            lastUpdated,
+            content
+        }
     }`;
 
     return await sanityClient.fetch(query, { slug });

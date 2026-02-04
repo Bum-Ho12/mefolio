@@ -23,11 +23,11 @@ const SkillsSection: React.FC<SkillsSectionProps> = ({ skills }) => {
 
         return allSkills
             .filter(skill => skill.icon && skill.icon && skill.icon.url)
-            .map(skill => ({
+            .map((skill, index) => ({
                 src: skill.icon?.url || "",
                 size: 40,
-                phi: Math.random() * 360,
-                theta: Math.random() * 360,
+                phi: (index * 47) % 360,
+                theta: (index * 31) % 360,
             }));
     }, [skills]);
 
