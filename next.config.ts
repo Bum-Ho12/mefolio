@@ -1,9 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  allowedDevOrigins: ["192.168.8.15"],
   images: {
-    domains: ['cdn.sanity.io'], // Add your allowed image domains here
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "cdn.sanity.io",
+      },
+    ],
+    dangerouslyAllowLocalIP: process.env.NODE_ENV === "development",
   },
   // async rewrites() {
   //   return [
