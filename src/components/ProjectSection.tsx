@@ -21,6 +21,7 @@ const ProjectCard = ({ project }: { project: Project }) => {
                             alt={project.name}
                             width={640}
                             height={160}
+                            sizes="(max-width: 768px) 100vw, 33vw"
                             className="w-full h-40 object-cover rounded-xl mb-4"
                         />
                     <h3 className="text-xl font-semibold mb-2 text-white">{project.name}</h3>
