@@ -9,8 +9,9 @@ import ResumeSection from "@/components/ResumeSection";
 import SkillsSection from "@/components/SkillsSection";
 import ProjectSection from "@/components/ProjectSection";
 import ContactSection from "@/components/ContactSection";
+import VideoSection from "@/components/VideoSection";
 import { useEffect, useState } from "react";
-import { Career, Intro as IntroType, Projects, Skills, Resume } from "@/utils/types"; // Adjust import path as needed
+import { Career, Intro as IntroType, Projects, Skills, Resume } from "@/utils/types";
 import LoadingScreen from '@/components/LoadingScreen';
 
 interface PageData {
@@ -76,6 +77,7 @@ export default function HomeContent() {
     { id: "career", content: <CareerSection career={pageData.career} /> },
     { id: "skills", content: <SkillsSection skills={pageData.skills} /> },
     { id: "projects", content: <ProjectSection projects={pageData.projects} /> },
+    { id: "video", content: <VideoSection /> },
     { id: "resume", content: <ResumeSection resume={pageData.resume} /> },
     { id: "inquiries", content: <ContactSection intro={pageData.intro} /> },
   ];
