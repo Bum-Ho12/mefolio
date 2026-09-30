@@ -3,17 +3,23 @@
 import { motion } from "framer-motion";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { IoArrowUpCircle, IoArrowDownCircle } from "react-icons/io5";
+import { ScrollContainerContext } from "./ScrollContainerContext";
 
 interface SectionData {
     id: string;
     content: React.ReactNode;
+    // Section sizes itself (e.g. taller than one screen) instead of being a centered h-screen box.
+    tall?: boolean;
 }
 
 export default function ClientLayout({ sections }: { sections: SectionData[] }) {
     const sectionIds = useMemo(() => sections.map((section) => section.id), [sections]);
     const [activeSection, setActiveSection] = useState<string>(sectionIds[0]);
     const [isAboutSection, setIsAboutSection] = useState(true);
-    const containerRef = useRef<HTMLDivElement>(null);
+    // Held in state so consumers re-subscribe once the scroll element mounts;
+    // a plain ref is attached only after child effects have already run.
+    const [scrollEl, setScrollEl] = useState<HTMLDivElement | null>(null);
+    const scrollRef = useMemo(() => (scrollEl ? { current: scrollEl } : null), [scrollEl]);
     const isScrolling = useRef(false);
 
     const scrollToSection = (id: string) => {
@@ -30,10 +36,11 @@ export default function ClientLayout({ sections }: { sections: SectionData[] }) 
     };
 
     useEffect(() => {
+        if (!scrollEl) return;
         const observer = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {
-                    if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+                    if (entry.isIntersecting) {
                         const id = entry.target.id;
                         setActiveSection(id);
                         setIsAboutSection(id === sectionIds[0]);
@@ -41,8 +48,11 @@ export default function ClientLayout({ sections }: { sections: SectionData[] }) 
                 });
             },
             {
-                root: null,
-                threshold: 0.5,
+                // A section is active while it covers the vertical center line,
+                // which works for sections of any height.
+                root: scrollEl,
+                rootMargin: "-50% 0px -50% 0px",
+                threshold: 0,
             }
         );
 
@@ -52,7 +62,7 @@ export default function ClientLayout({ sections }: { sections: SectionData[] }) 
         });
 
         return () => observer.disconnect();
-    }, [sectionIds]);
+    }, [sectionIds, scrollEl]);
 
     return (
         <div className="relative max-h-screen h-screen overflow-y-auto snap-mandatory snap-y custom-scrollbar lg:pl-10">
@@ -125,23 +135,29 @@ export default function ClientLayout({ sections }: { sections: SectionData[] }) 
             </motion.button>
 
             <div
-                ref={containerRef}
+                ref={setScrollEl}
                 className="h-screen overflow-y-auto snap-mandatory snap-y relative"
                 style={{ scrollBehavior: "smooth" }}
             >
-                {sections.map((section) => (
-                    <motion.section
-                        id={section.id}
-                        key={section.id}
-                        className="h-screen flex items-center justify-center snap-start snap-always"
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        transition={{ duration: 0.8 }}
-                        viewport={{ once: true, amount: 0.5 }}
-                    >
-                        {section.content}
-                    </motion.section>
-                ))}
+                <ScrollContainerContext.Provider value={scrollRef}>
+                    {sections.map((section) => (
+                        <motion.section
+                            id={section.id}
+                            key={section.id}
+                            className={
+                                section.tall
+                                    ? "snap-start snap-always"
+                                    : "h-screen flex items-center justify-center snap-start snap-always"
+                            }
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                            transition={{ duration: 0.8 }}
+                            viewport={{ once: true, amount: section.tall ? "some" : 0.5 }}
+                        >
+                            {section.content}
+                        </motion.section>
+                    ))}
+                </ScrollContainerContext.Provider>
 
                 {/* <footer className="bg-black text-center py-4">
                     <p className="text-sm text-gray-400">

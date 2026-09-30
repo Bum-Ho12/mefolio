@@ -1,38 +1,43 @@
 // components/LoopVideo.tsx
+"use client";
+
 import { useEffect, useRef } from "react";
 
 type LoopVideoProps = {
     src: string;
     poster?: string;
+    playing: boolean;
+    // When false only the poster is shown and no video bytes are fetched.
+    load: boolean;
+    controls?: boolean;
     className?: string;
 };
 
-export default function LoopVideo({ src, poster, className = "" }: LoopVideoProps) {
+export default function LoopVideo({ src, poster, playing, load, controls = false, className = "" }: LoopVideoProps) {
     const ref = useRef<HTMLVideoElement | null>(null);
 
     useEffect(() => {
         const v = ref.current;
         if (!v) return;
-        const io = new IntersectionObserver(
-            ([entry]) => (entry.isIntersecting ? v.play().catch(() => { }) : v.pause()),
-            { threshold: 0.25 }
-        );
-        io.observe(v);
-        return () => io.disconnect();
-    }, []);
+        if (playing && load) {
+            v.play().catch(() => { });
+        } else {
+            v.pause();
+            v.currentTime = 0;
+        }
+    }, [playing, load]);
 
     return (
         <video
             ref={ref}
             className={className}
             poster={poster}
+            src={load ? src : undefined}
+            controls={controls}
             muted
             loop
             playsInline
-            preload="metadata"
-        >
-            <source src={src.replace(".mp4", ".webm")} type="video/webm" />
-            <source src={src} type="video/mp4" />
-        </video>
+            preload={load ? "metadata" : "none"}
+        />
     );
 }

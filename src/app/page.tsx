@@ -13,6 +13,7 @@ import VideoSection from "@/components/VideoSection";
 import { useEffect, useState } from "react";
 import { Career, Intro as IntroType, Projects, Skills, Resume } from "@/utils/types";
 import LoadingScreen from '@/components/LoadingScreen';
+import { VIDEOS } from '@/utils/videos';
 
 interface PageData {
   intro: IntroType;
@@ -77,7 +78,7 @@ export default function HomeContent() {
     { id: "career", content: <CareerSection career={pageData.career} /> },
     { id: "skills", content: <SkillsSection skills={pageData.skills} /> },
     { id: "projects", content: <ProjectSection projects={pageData.projects} /> },
-    { id: "video", content: <VideoSection /> },
+    { id: "video", tall: true, content: <VideoSection videos={VIDEOS} /> },
     { id: "resume", content: <ResumeSection resume={pageData.resume} /> },
     { id: "inquiries", content: <ContactSection intro={pageData.intro} /> },
   ];
