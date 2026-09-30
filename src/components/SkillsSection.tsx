@@ -32,6 +32,7 @@ const SkillsSection: React.FC<SkillsSectionProps> = ({ skills }) => {
     }, [skills]);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
         const updateDimensions = () => {
             if (containerRef.current) {
