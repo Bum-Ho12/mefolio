@@ -1,6 +1,7 @@
 // src/services/api/sanity.ts
 import { sanityClient } from '@/utils/sanity';
-import { AboutData, Career, ContactData, Intro, PrivacyPolicyData, Projects, Resume, Skills, StoreData, StoreItem, TermsConditionsData } from '@/utils/types';
+import { AboutData, Career, ContactData, Intro, PrivacyPolicyData, Projects, Resume, Skills, StoreData, StoreItem, TermsConditionsData, Videos } from '@/utils/types';
+import { VIDEOS } from '@/utils/videos';
 
 // Fetch functions
 export async function getIntro(): Promise<Intro> {
@@ -155,7 +156,8 @@ export async function getStoreItem(slug: string): Promise<StoreItem> {
 }
 
 export async function getStoreItems(category?: string): Promise<StoreItem[]> {
-    const categoryFilter = category ? ` && category == "${category}"` : '';
+    // Passed as a GROQ parameter, never interpolated into the query string.
+    const categoryFilter = category ? ' && category == $category' : '';
 
     const query = `*[_type == "storeItem"${categoryFilter}] | order(featured desc, releaseDate desc) {
         name,
@@ -170,7 +172,21 @@ export async function getStoreItems(category?: string): Promise<StoreItem[]> {
         version
     }`;
 
-    return await sanityClient.fetch(query);
+    return await sanityClient.fetch(query, category ? { category } : {});
+}
+
+// Falls back to the bundled list until a `videos` document is published.
+export async function getVideos(): Promise<Videos> {
+    const query = `*[_type == "videos"][0]{
+        title,
+        videos[]{
+            title,
+            publicId,
+            description
+        }
+    }`;
+    const data = await sanityClient.fetch<Videos | null>(query);
+    return data?.videos?.length ? data : VIDEOS;
 }
 
 // Fetch About page data
