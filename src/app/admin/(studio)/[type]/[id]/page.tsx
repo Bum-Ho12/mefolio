@@ -48,7 +48,7 @@ export default async function EditPage({ params }: { params: Promise<{ type: str
             hasDraft={!!draft}
             lookup={lookup}
             refOptions={Object.fromEntries(refTypes.map((t, i) => [t, refLists[i]]))}
-            cloudinaryEnabled={!!(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET)}
+            cloudinaryEnabled={!!(process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET)}
         />
     );
 }

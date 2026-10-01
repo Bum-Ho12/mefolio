@@ -108,7 +108,7 @@ function PinnedVideoStrip({ videos }: VideoSectionProps) {
             {/* One snap stop per video so each scroll step lands a card in the center */}
             {items.map((item, i) => (
                 <div
-                    key={`snap-${item.publicId}-${i}`}
+                    key={`snap-${item._key ?? item.publicId ?? item.url}-${i}`}
                     aria-hidden
                     className="absolute left-0 w-full h-screen snap-start snap-always pointer-events-none"
                     style={{ top: `${i * 100}vh` }}
@@ -125,7 +125,7 @@ function PinnedVideoStrip({ videos }: VideoSectionProps) {
                 >
                     {items.map((item, i) => (
                         <VideoCard
-                            key={`${item.publicId}-${i}`}
+                            key={`${item._key ?? item.publicId ?? item.url}-${i}`}
                             item={item}
                             index={i}
                             total={total}
@@ -143,7 +143,7 @@ function PinnedVideoStrip({ videos }: VideoSectionProps) {
                 <div className="flex justify-center gap-2" aria-hidden>
                     {items.map((item, i) => (
                         <span
-                            key={`dot-${item.publicId}-${i}`}
+                            key={`dot-${item._key ?? item.publicId ?? item.url}-${i}`}
                             className={`h-1.5 rounded-full transition-all duration-300 ${i === activeIndex ? 'w-6 bg-white' : 'w-1.5 bg-white/40'}`}
                         />
                     ))}
@@ -169,7 +169,7 @@ function StaticVideoRow({ videos, autoPlay }: VideoSectionProps & { autoPlay: bo
             <SectionHeading title={videos.title} />
             <div className="flex gap-8 overflow-x-auto snap-x snap-mandatory scrollbar-hide px-4 justify-start md:justify-center">
                 {items.map((item, i) => (
-                    <div key={`${item.publicId}-${i}`} className="snap-center">
+                    <div key={`${item._key ?? item.publicId ?? item.url}-${i}`} className="snap-center">
                         <VideoCard
                             item={item}
                             index={i}

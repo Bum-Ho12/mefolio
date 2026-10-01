@@ -3,10 +3,11 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, Check, CircleAlert, Eye, Loader2, PencilLine } from 'lucide-react';
+import { ArrowLeft, Check, CircleAlert, Eye, EyeOff, Loader2, PencilLine } from 'lucide-react';
 import { getDocType } from '@/lib/content/registry';
 import { deleteDocument, discardDraft, publishDocument, saveDraft, unpublishDocument, type ActionResult } from '@/lib/content/actions';
 import type { Lookup } from '@/lib/content/adapters';
+import { hiddenOnSite } from '@/lib/content/visibility';
 import { EditorContext, type RefOption } from './EditorContext';
 import { FieldList } from './FieldInput';
 import PreviewPane from './PreviewPane';
@@ -166,6 +167,7 @@ export default function Editor(props: EditorProps) {
     };
 
     const context = useMemo(() => ({ refOptions: props.refOptions, errors, cloudinaryEnabled: props.cloudinaryEnabled }), [props.refOptions, errors, props.cloudinaryEnabled]);
+    const hiddenNotice = hiddenOnSite(def.type, values, props.lookup);
     const canPublish = status.hasDraft || saveState === 'dirty' || saveState === 'saved';
 
     return (
@@ -220,7 +222,13 @@ export default function Editor(props: EditorProps) {
                         <FieldList fields={def.fields} values={values} onChange={onChange} />
                     </div>
                     {!focusPreview && <SplitHandle row={row} />}
-                    <div className={`min-h-0 min-w-0 flex-1 lg:block ${tab === 'preview' ? 'block' : 'hidden'}`}>
+                    <div className={`min-h-0 min-w-0 flex-1 flex-col lg:flex ${tab === 'preview' ? 'flex' : 'hidden'}`}>
+                        {hiddenNotice && (
+                            <p className="flex items-center gap-2 border-b border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                                <EyeOff className="h-4 w-4 flex-shrink-0" /> {hiddenNotice}
+                            </p>
+                        )}
+                        <div className="min-h-0 flex-1">
                         <PreviewPane
                             type={def.type}
                             values={values}
@@ -228,6 +236,7 @@ export default function Editor(props: EditorProps) {
                             focused={focusPreview}
                             onToggleFocus={() => setFocusPreview((f) => !f)}
                         />
+                        </div>
                     </div>
                 </div>
             </div>

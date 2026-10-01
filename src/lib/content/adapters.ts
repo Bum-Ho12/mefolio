@@ -71,9 +71,14 @@ export const toResume = (d: Doc): Resume => {
 
 export const toVideos = (d: Doc): Videos => ({
     title: str(d.title),
-    videos: arr(d.videos)
-        .filter((v) => str(v.publicId))
-        .map((v) => ({ title: str(v.title), publicId: str(v.publicId), description: str(v.description) || undefined })),
+    videos: arr(d.videos).map((v) => ({
+        _key: str(v._key) || undefined,
+        title: str(v.title),
+        publicId: str(v.publicId) || undefined,
+        url: str(v.url) || undefined,
+        poster: imageUrl(v.poster),
+        description: str(v.description) || undefined,
+    })),
 });
 
 export const toPrivacyPolicy = (d: Doc): PrivacyPolicyData => ({

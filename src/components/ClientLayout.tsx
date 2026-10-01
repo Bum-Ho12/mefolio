@@ -64,6 +64,16 @@ export default function ClientLayout({ sections }: { sections: SectionData[] }) 
         return () => observer.disconnect();
     }, [sectionIds, scrollEl]);
 
+    // Every section can be hidden when it has no content; with none left there is
+    // nothing to scroll between.
+    if (sections.length === 0) {
+        return (
+            <div className="h-screen flex items-center justify-center text-gray-400">
+                Content coming soon.
+            </div>
+        );
+    }
+
     return (
         <div className="relative max-h-screen h-screen overflow-y-auto snap-mandatory snap-y custom-scrollbar lg:pl-10">
             {/* Animated Ambient Radial Blue Background */}
@@ -113,7 +123,7 @@ export default function ClientLayout({ sections }: { sections: SectionData[] }) 
                 )}
             </div>
 
-            <motion.button
+            {sectionIds.length > 1 && <motion.button
                 className="fixed bottom-10 z-50 p-2 bg-[#FFD3AC] rounded-full shadow-lg"
                 onClick={() =>
                     isAboutSection
@@ -132,7 +142,7 @@ export default function ClientLayout({ sections }: { sections: SectionData[] }) 
                 ) : (
                     <IoArrowUpCircle size={30} />
                 )}
-            </motion.button>
+            </motion.button>}
 
             <div
                 ref={setScrollEl}

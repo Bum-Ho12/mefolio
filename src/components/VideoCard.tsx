@@ -5,7 +5,7 @@ import { forwardRef } from "react";
 import { motion, MotionValue, useTransform } from "framer-motion";
 import LoopVideo from "./LoopVideo";
 import { VideoItem } from "@/utils/types";
-import { posterUrl, videoUrl } from "@/utils/cloudinary";
+import { resolveVideo } from "@/utils/video";
 
 type VideoCardProps = {
     item: VideoItem;
@@ -32,6 +32,8 @@ const VideoCard = forwardRef<HTMLDivElement, VideoCardProps>(function VideoCard(
     const range = [center - 1 / span, center, center + 1 / span];
     const scale = useTransform(progress, range, [0.85, 1, 0.85]);
     const opacity = useTransform(progress, range, [0.5, 1, 0.5]);
+    const source = resolveVideo(item, videoWidth);
+    const frameClass = "w-full aspect-video object-cover block bg-black";
 
     return (
         <motion.div
@@ -51,14 +53,36 @@ const VideoCard = forwardRef<HTMLDivElement, VideoCardProps>(function VideoCard(
                 <span className="w-3 h-3 rounded-full bg-green-500" />
                 <span className="ml-3 text-xs text-neutral-400 font-mono truncate">{item.title}</span>
             </div>
-            <LoopVideo
-                src={videoUrl(item.publicId, videoWidth)}
-                poster={posterUrl(item.publicId, videoWidth)}
-                playing={playing}
-                load={shouldLoad}
-                controls={controls}
-                className="w-full aspect-video object-cover block bg-black"
-            />
+            {source.kind === "cloudinary" || source.kind === "file" ? (
+                <LoopVideo
+                    src={source.src}
+                    poster={source.poster}
+                    playing={playing}
+                    load={shouldLoad}
+                    controls={controls}
+                    className={frameClass}
+                />
+            ) : source.kind === "youtube" || source.kind === "vimeo" ? (
+                // The platform player is mounted only while this card is the one playing,
+                // which keeps "only the active clip plays" without each platform's script.
+                playing && shouldLoad ? (
+                    <iframe
+                        src={source.embedSrc}
+                        title={item.title}
+                        className={`${frameClass} border-0 pointer-events-none`}
+                        allow="autoplay; encrypted-media; picture-in-picture"
+                        referrerPolicy="strict-origin-when-cross-origin"
+                        loading="lazy"
+                    />
+                ) : (
+                    <div
+                        className={`${frameClass} bg-cover bg-center`}
+                        style={source.poster ? { backgroundImage: `url(${JSON.stringify(source.poster)})` } : undefined}
+                    />
+                )
+            ) : (
+                <div className={`${frameClass} flex items-center justify-center text-sm text-neutral-500`}>Video unavailable</div>
+            )}
             {item.description && (
                 <p className="px-4 py-3 text-sm text-gray-300">{item.description}</p>
             )}

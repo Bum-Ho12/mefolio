@@ -177,9 +177,15 @@ export interface ContactData {
     formIntro: string;
 }
 
+// A video comes from exactly one source: a Cloudinary public id, or an https link
+// (a direct file, or a YouTube/Vimeo page). See utils/video.ts.
 export interface VideoItem {
+    _key?: string;
     title: string;
-    publicId: string;
+    publicId?: string;
+    url?: string;
+    // Still image shown before a linked file loads (Cloudinary generates its own).
+    poster?: string;
     description?: string;
 }
 

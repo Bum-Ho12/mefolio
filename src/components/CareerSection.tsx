@@ -9,7 +9,13 @@ interface CareerSectionProps {
 }
 
 const CareerSection: React.FC<CareerSectionProps> = ({ career }) => {
-    const [activeSubsection, setActiveSubsection] = useState<string>("education");
+    // Only subsections with entries are rendered, so no panel ever opens onto a blank screen.
+    const subsections = [
+        { id: "education", count: career.education.length },
+        { id: "work", count: career.workExperience.length },
+        { id: "certifications", count: career.certifications.length },
+    ].filter((subsection) => subsection.count > 0).map((subsection) => subsection.id);
+    const [activeSubsection, setActiveSubsection] = useState<string>(subsections[0] ?? "education");
     const [isSidebarVisible, setIsSidebarVisible] = useState<boolean>(true);
 
     useEffect(() => {
@@ -110,7 +116,7 @@ const CareerSection: React.FC<CareerSectionProps> = ({ career }) => {
                 >
                     <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg rounded-md border border-white/10 lg:hidden" />
                     <ul className="flex lg:flex-col lg:space-y-4 space-x-4 lg:space-x-0 font-bold text-lg relative py-4 lg:py-6 max-h-screen w-full lg:w-auto justify-around lg:justify-start">
-                        {["education", "work", "certifications"].map((section) => (
+                        {subsections.map((section) => (
                             <li
                                 key={section}
                                 onClick={() => setActiveSubsection(section)}
@@ -124,24 +130,24 @@ const CareerSection: React.FC<CareerSectionProps> = ({ career }) => {
                 </aside>
 
                 <div className="flex-1 h-screen overflow-y-scroll snap-y snap-mandatory scrollbar-hide">
-                    <div
+                    {subsections.includes("education") && <div
                         id="education"
                         className="career-subsection snap-start min-h-screen flex border-b border-gray-700 pl-4 lg:pl-16 pt-24"
                     >
                         {renderEducation()}
-                    </div>
-                    <div
+                    </div>}
+                    {subsections.includes("work") && <div
                         id="work"
                         className="career-subsection snap-start min-h-screen flex border-b border-gray-700 pl-4 lg:pl-16 pt-24"
                     >
                         {renderWork()}
-                    </div>
-                    <div
+                    </div>}
+                    {subsections.includes("certifications") && <div
                         id="certifications"
                         className="career-subsection snap-start min-h-screen flex border-b border-gray-700 pl-4 lg:pl-16 pt-24"
                     >
                         {renderCertifications()}
-                    </div>
+                    </div>}
                 </div>
             </div>
         </section>
