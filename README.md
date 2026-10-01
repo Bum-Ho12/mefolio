@@ -38,10 +38,48 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## Environment variables
 
-Create .env and .env.local files on the root folder of the project and add the following:
+Create `.env.local` in the project root:
+
+```
 NEXT_PUBLIC_SANITY_PROJECT_ID=
 NEXT_PUBLIC_SANITY_DATASET=production
-NEXT_PUBLIC_SANITY_API_VERSION=
-SANITY_API_TOKEN=
+NEXT_PUBLIC_SANITY_API_VERSION=2025-01-07
+```
 
-change to the correct variable data
+The public site needs no Sanity token: the dataset is public and the read client never sends one.
+
+## Content admin (`/admin`)
+
+A built-in replacement for Sanity Studio: schema-driven forms, drafts, publishing, uploads and a
+live preview that renders the site's own components. It is off unless every variable below is set;
+if anything is missing, every admin route returns 404.
+
+```
+ADMIN_ENABLED=true
+ADMIN_GITHUB_ID=            # your numeric GitHub id: curl https://api.github.com/users/<login>
+GITHUB_CLIENT_ID=           # GitHub OAuth app (one per environment)
+GITHUB_CLIENT_SECRET=
+ADMIN_SESSION_SECRET=       # openssl rand -base64 32
+ADMIN_SESSION_VERSION=1     # bump to sign out every browser
+ADMIN_BASE_URL=             # optional, e.g. https://bum-ho.vercel.app (pins the OAuth callback)
+SANITY_WRITE_TOKEN=         # Sanity token with the Editor role; server only
+
+# Optional: direct video uploads for the Videos section
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+CLOUDINARY_UPLOAD_FOLDER=mefolio
+```
+
+**GitHub OAuth app:** github.com → Settings → Developer settings → OAuth Apps. Set the callback URL to
+`<site>/api/auth/callback`. Only the account whose numeric id matches `ADMIN_GITHUB_ID` can sign in.
+
+**How it's secured**
+- Login is GitHub OAuth (state + PKCE) with an allowlist of one numeric user id. The access token is discarded after the identity check.
+- Sessions are encrypted JWTs (A256GCM) in an HttpOnly, Secure, SameSite=Lax `__Host-` cookie, with an 8-hour absolute lifetime.
+- Every admin page, Server Action and route handler checks the session itself (`src/lib/auth/dal.ts`). `src/proxy.ts` only adds an early redirect, rate limiting and `noindex`/anti-framing headers.
+- The write token lives only in `server-only` modules. Input is validated against zod schemas generated from `src/lib/content/registry.ts`. URLs are limited to http(s)/mailto/tel. Uploads are identified by magic bytes (no SVG, max 4 MB), and saves use optimistic revision locks.
+- Edits are saved as Sanity drafts (`drafts.<id>`), which the public site cannot see, until you publish.
+
+**Adding a content type:** add an entry to `src/lib/content/registry.ts`, an adapter in `src/lib/content/adapters.ts`,
+and a case in `src/components/admin/PreviewRenderer.tsx`.

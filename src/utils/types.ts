@@ -176,3 +176,14 @@ export interface ContactData {
     }[];
     formIntro: string;
 }
+
+export interface VideoItem {
+    title: string;
+    publicId: string;
+    description?: string;
+}
+
+export interface Videos {
+    title: string;
+    videos: VideoItem[];
+}
