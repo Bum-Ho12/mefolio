@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { CLOUDINARY_ID, DOC_ID, FILE_REF, IMAGE_REF, KEY, type DocTypeDef, type Field } from './fields';
+import { CLOUDINARY_ID, resolveVideo } from '@/utils/video';
+import { DOC_ID, FILE_REF, IMAGE_REF, KEY, type DocTypeDef, type Field } from './fields';
 
 export type Mode = 'draft' | 'publish';
 
@@ -114,18 +115,37 @@ function fieldSchema(field: Field, mode: Mode): z.ZodType {
             return z.array(objectSchema(field.of, mode, { _key: key })).max(MAX_ARRAY);
         case 'blocks':
             return blocks;
-        case 'cloudinaryVideo':
+        case 'videoSource':
             return z.string().regex(CLOUDINARY_ID, 'Invalid Cloudinary public id');
+        case 'videoUrl':
+            // https only, and it must be something the site can actually play.
+            return z.string().max(2048).superRefine((url, ctx) => {
+                const source = resolveVideo({ url });
+                if (source.kind === 'unsupported') ctx.addIssue({ code: 'custom', message: source.reason });
+            });
     }
 }
 
-function objectSchema(fields: Field[], mode: Mode, extra: Record<string, z.ZodType> = {}) {
+function objectSchema(fields: Field[], mode: Mode, extra: Record<string, z.ZodType> = {}): z.ZodType {
     const shape: Record<string, z.ZodType> = { ...extra };
     for (const field of fields) {
         const schema = fieldSchema(field, mode);
         shape[field.name] = mode === 'publish' && field.required ? schema : schema.optional();
     }
-    return z.strictObject(shape);
+    const object = z.strictObject(shape);
+
+    // A video has exactly one source: never both, and one is required to publish.
+    const sources = fields.filter((f) => f.kind === 'videoSource');
+    if (!sources.length) return object;
+    return object.superRefine((value, ctx) => {
+        const record = value as Record<string, unknown>;
+        for (const source of sources) {
+            const hasId = record[source.name] !== undefined;
+            const hasUrl = record[source.urlField] !== undefined;
+            if (hasId && hasUrl) ctx.addIssue({ code: 'custom', path: [source.name], message: 'Use a Cloudinary id or a link, not both' });
+            if (mode === 'publish' && !hasId && !hasUrl) ctx.addIssue({ code: 'custom', path: [source.name], message: 'Add a video source' });
+        }
+    });
 }
 
 export function documentSchema(def: DocTypeDef, mode: Mode) {

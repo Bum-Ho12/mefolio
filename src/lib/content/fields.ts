@@ -6,6 +6,8 @@ interface Base {
     title: string;
     description?: string;
     required?: boolean;
+    // Stored and validated, but edited through another field's control.
+    hidden?: boolean;
 }
 
 export type Field =
@@ -27,7 +29,10 @@ export type Field =
     | (Base & { kind: 'references'; to: string })
     | (Base & { kind: 'objects'; of: Field[]; itemTitle: string; itemSubtitle?: string })
     | (Base & { kind: 'blocks' })
-    | (Base & { kind: 'cloudinaryVideo' });
+    // One control for a video's source: writes a Cloudinary public id to this field, or
+    // an https link to the sibling field named by `urlField`. Exactly one is kept.
+    | (Base & { kind: 'videoSource'; urlField: string })
+    | (Base & { kind: 'videoUrl' });
 
 export type FieldKind = Field['kind'];
 
@@ -52,7 +57,6 @@ export const IMAGE_REF = /^image-[a-f0-9]{20,64}-\d{1,5}x\d{1,5}-(png|jpe?g|webp
 export const FILE_REF = /^file-[a-f0-9]{20,64}-pdf$/;
 export const DOC_ID = /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/;
 export const KEY = /^[A-Za-z0-9_-]{1,64}$/;
-export const CLOUDINARY_ID = /^[A-Za-z0-9_\-/]{1,200}$/;
 
 export function newKey() {
     const bytes = new Uint8Array(6);

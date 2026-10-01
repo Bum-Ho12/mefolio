@@ -64,8 +64,9 @@ ADMIN_SESSION_VERSION=1     # bump to sign out every browser
 ADMIN_BASE_URL=             # optional, e.g. https://bum-ho.vercel.app (pins the OAuth callback)
 SANITY_WRITE_TOKEN=         # Sanity token with the Editor role; server only
 
-# Optional: direct video uploads for the Videos section
-CLOUDINARY_CLOUD_NAME=
+# Optional: Cloudinary account that videos play from (defaults to the built-in one)
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=
+# Optional: enables "Upload video to Cloudinary" in the admin (same account as above)
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
 CLOUDINARY_UPLOAD_FOLDER=mefolio
@@ -80,6 +81,13 @@ CLOUDINARY_UPLOAD_FOLDER=mefolio
 - Every admin page, Server Action and route handler checks the session itself (`src/lib/auth/dal.ts`). `src/proxy.ts` only adds an early redirect, rate limiting and `noindex`/anti-framing headers.
 - The write token lives only in `server-only` modules. Input is validated against zod schemas generated from `src/lib/content/registry.ts`. URLs are limited to http(s)/mailto/tel. Uploads are identified by magic bytes (no SVG, max 4 MB), and saves use optimistic revision locks.
 - Edits are saved as Sanity drafts (`drafts.<id>`), which the public site cannot see, until you publish.
+
+**Videos:** each video is a Cloudinary public id, a direct `https` link to a video file, or a YouTube/Vimeo
+link (`src/utils/video.ts`). Cloudinary clips are compressed and resized per device; linked files are served
+as-is, so add a poster image for them.
+
+**Empty sections:** a home section and its nav button only appear while it has content. The rules live in
+`src/utils/sections.ts` and the editor shows a notice when a document would be hidden.
 
 **Adding a content type:** add an entry to `src/lib/content/registry.ts`, an adapter in `src/lib/content/adapters.ts`,
 and a case in `src/components/admin/PreviewRenderer.tsx`.

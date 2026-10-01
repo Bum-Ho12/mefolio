@@ -6,7 +6,7 @@ import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, Copy, ExternalLink, Plus
 import { newKey, type Field } from '@/lib/content/fields';
 import type { Block } from '@/lib/content/portableText';
 import BlocksInput from './BlocksInput';
-import { CloudinaryVideoInput, FileInput, ImageInput, ImagesInput } from './MediaInputs';
+import { FileInput, ImageInput, ImagesInput, VideoSourceInput } from './MediaInputs';
 import { useEditorContext } from './EditorContext';
 import { Button, inputClass } from './ui';
 
@@ -20,6 +20,8 @@ interface FieldProps {
     onChange: (value: any) => void;
     path: string;
     siblings?: Values;
+    // Updates several fields of the parent object at once.
+    patch: (partial: Values) => void;
 }
 
 const slugify = (s: string) =>
@@ -28,7 +30,7 @@ const slugify = (s: string) =>
 export function FieldList({ fields, values, onChange, path = '' }: { fields: Field[]; values: Values; onChange: (v: Values) => void; path?: string }) {
     return (
         <div className="space-y-5">
-            {fields.map((field) => (
+            {fields.filter((field) => !field.hidden).map((field) => (
                 <FieldInput
                     key={field.name}
                     field={field}
@@ -36,6 +38,7 @@ export function FieldList({ fields, values, onChange, path = '' }: { fields: Fie
                     siblings={values}
                     path={path ? `${path}.${field.name}` : field.name}
                     onChange={(v) => onChange({ ...values, [field.name]: v })}
+                    patch={(partial) => onChange({ ...values, ...partial })}
                 />
             ))}
         </div>
@@ -62,7 +65,7 @@ export function FieldInput(props: FieldProps) {
     );
 }
 
-function Control({ field, value, onChange, path, siblings }: FieldProps) {
+function Control({ field, value, onChange, path, siblings, patch }: FieldProps) {
     const { refOptions } = useEditorContext();
 
     switch (field.kind) {
@@ -142,8 +145,18 @@ function Control({ field, value, onChange, path, siblings }: FieldProps) {
             return <ImagesInput value={value} onChange={onChange} />;
         case 'file':
             return <FileInput value={value} onChange={onChange} />;
-        case 'cloudinaryVideo':
-            return <CloudinaryVideoInput value={value} onChange={onChange} />;
+        case 'videoSource':
+            return (
+                <VideoSourceInput
+                    publicId={value}
+                    url={siblings?.[field.urlField]}
+                    poster={siblings?.poster}
+                    onChange={(source) => patch({ [field.name]: source.publicId, [field.urlField]: source.url })}
+                />
+            );
+        case 'videoUrl':
+            // Edited through its videoSource sibling.
+            return null;
         case 'blocks':
             return <BlocksInput value={value as Block[] | undefined} onChange={onChange} />;
         case 'reference': {

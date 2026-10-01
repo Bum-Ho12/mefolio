@@ -1,51 +1,55 @@
 // src/services/api/sanity.ts
 import { sanityClient } from '@/utils/sanity';
 import { AboutData, Career, ContactData, Intro, PrivacyPolicyData, Projects, Resume, Skills, StoreData, StoreItem, TermsConditionsData, Videos } from '@/utils/types';
-import { VIDEOS } from '@/utils/videos';
 
-// Fetch functions
+// Sanity returns null for a missing document and for a missing array field. Every list
+// is wrapped in coalesce(…, []) and every fetcher falls back to an empty shape, so
+// components can always iterate and sections with no content are simply hidden.
+
 export async function getIntro(): Promise<Intro> {
     const query = `*[_type == "intro"][0] {
         greeting,
         name,
         title,
         location,
-        socialLinks[] {
+        "socialLinks": coalesce(socialLinks[] {
         platform,
         url
-        }
+        }, [])
     }`;
-    return sanityClient.fetch(query);
+    const data = await sanityClient.fetch<Intro | null>(query);
+    return data ?? { greeting: '', name: '', title: '', location: '', socialLinks: [] };
 }
 
 export async function getCareer(): Promise<Career> {
     const query = `*[_type == "career"][0] {
-        education[] {
+        "education": coalesce(education[] {
         degree,
         institution,
         year
-        },
-        workExperience[] {
+        }, []),
+        "workExperience": coalesce(workExperience[] {
         role,
         company,
         startDate,
         endDate,
         description
-        },
-        certifications[] {
+        }, []),
+        "certifications": coalesce(certifications[] {
         name,
         institution,
         year
-        }
+        }, [])
     }`;
-    return sanityClient.fetch(query);
+    const data = await sanityClient.fetch<Career | null>(query);
+    return data ?? { education: [], workExperience: [], certifications: [] };
 }
 
 export async function getProjects(): Promise<Projects> {
     const query = `*[_type == "projects"][0] {
         title,
         description,
-        "projects": projects[]-> {
+        "projects": coalesce(projects[defined(@->_id)]-> {
         name,
         description,
         "image": image.asset->{
@@ -53,33 +57,35 @@ export async function getProjects(): Promise<Projects> {
         },
         projectUrl,
         githubUrl
-        }
+        }, [])
     }`;
-    return sanityClient.fetch(query);
+    const data = await sanityClient.fetch<Projects | null>(query);
+    return data ?? { title: '', description: '', projects: [] };
 }
 
 export async function getSkills(): Promise<Skills> {
     const query = `*[_type == "skills"][0] {
-        languages[] {
+        "languages": coalesce(languages[] {
         name,
         "icon": icon.asset->{
             "url": url
         }
-        },
-        frameworks[] {
+        }, []),
+        "frameworks": coalesce(frameworks[] {
         name,
         "icon": icon.asset->{
             "url": url
         }
-        },
-        tools[] {
+        }, []),
+        "tools": coalesce(tools[] {
         name,
         "icon": icon.asset->{
             "url": url
         }
-        }
+        }, [])
     }`;
-    return sanityClient.fetch(query);
+    const data = await sanityClient.fetch<Skills | null>(query);
+    return data ?? { languages: [], frameworks: [], tools: [] };
 }
 
 export async function getResume(): Promise<Resume> {
@@ -91,7 +97,8 @@ export async function getResume(): Promise<Resume> {
         },
         downloadLink
     }`;
-    return sanityClient.fetch(query);
+    const data = await sanityClient.fetch<Resume | null>(query);
+    return data ?? {};
 }
 
 
@@ -102,7 +109,7 @@ export async function getStore(): Promise<StoreData> {
         "heroImage": heroImage.asset->url,
         heroTitle,
         heroSubtitle,
-        "items": items[]->{
+        "items": coalesce(items[defined(@->_id)]->{
             id,
             name,
             description,
@@ -112,7 +119,7 @@ export async function getStore(): Promise<StoreData> {
             },
             inStock,
             category
-        }
+        }, [])
     }`;
 
     return await sanityClient.fetch(query);
@@ -175,18 +182,21 @@ export async function getStoreItems(category?: string): Promise<StoreItem[]> {
     return await sanityClient.fetch(query, category ? { category } : {});
 }
 
-// Falls back to the bundled list until a `videos` document is published.
+// Each video is a Cloudinary public id or an https link, with an optional poster image.
 export async function getVideos(): Promise<Videos> {
     const query = `*[_type == "videos"][0]{
         title,
-        videos[]{
+        "videos": coalesce(videos[]{
+            _key,
             title,
             publicId,
+            url,
+            "poster": poster.asset->url,
             description
-        }
+        }, [])
     }`;
     const data = await sanityClient.fetch<Videos | null>(query);
-    return data?.videos?.length ? data : VIDEOS;
+    return data ?? { title: 'Videos', videos: [] };
 }
 
 // Fetch About page data
@@ -197,12 +207,12 @@ export async function getAboutPage(): Promise<AboutData> {
         heroTitle,
         heroSubtitle,
         content,
-        team[]{
+        "team": coalesce(team[]{
         name,
         role,
         bio,
         "image": image.asset->url
-        }
+        }, [])
     }`;
     return await sanityClient.fetch(query);
 }
@@ -243,10 +253,10 @@ export async function getContactPage(): Promise<ContactData> {
         email,
         phone,
         address,
-        socialLinks[]{
+        "socialLinks": coalesce(socialLinks[]{
             platform,
             url
-        },
+        }, []),
         formIntro
     }`;
     return await sanityClient.fetch(query);

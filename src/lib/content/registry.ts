@@ -146,7 +146,9 @@ export const DOC_TYPES: DocTypeDef[] = [
                 kind: 'objects', name: 'videos', title: 'Videos', itemTitle: 'title', itemSubtitle: 'publicId',
                 of: [
                     { kind: 'string', name: 'title', title: 'Title', required: true },
-                    { kind: 'cloudinaryVideo', name: 'publicId', title: 'Cloudinary video', required: true },
+                    { kind: 'videoSource', name: 'publicId', title: 'Video source', urlField: 'url', description: 'A Cloudinary public id, a direct https link to a video file, or a YouTube/Vimeo link.' },
+                    { kind: 'videoUrl', name: 'url', title: 'Video link', hidden: true },
+                    { kind: 'image', name: 'poster', title: 'Poster image', description: 'Shown before a linked video loads. Not needed for Cloudinary videos.' },
                     { kind: 'text', name: 'description', title: 'Description', rows: 2 },
                 ],
             },

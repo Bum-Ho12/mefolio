@@ -13,6 +13,7 @@ import VideoSection from "@/components/VideoSection";
 import { useEffect, useState } from "react";
 import { Career, Intro as IntroType, Projects, Skills, Resume, Videos } from "@/utils/types";
 import LoadingScreen from '@/components/LoadingScreen';
+import { hasContent, playableVideos } from '@/utils/sections';
 
 interface PageData {
   intro: IntroType;
@@ -23,6 +24,17 @@ interface PageData {
   videos: Videos;
 }
 
+// What a section gets when its request fails: the same shape as "no content", so the
+// section is hidden and the rest of the page still loads.
+const EMPTY: PageData = {
+  intro: { greeting: '', name: '', title: '', location: '', socialLinks: [] },
+  career: { education: [], workExperience: [], certifications: [] },
+  projects: { title: '', description: '', projects: [] },
+  skills: { languages: [], frameworks: [], tools: [] },
+  resume: {},
+  videos: { title: 'Videos', videos: [] },
+};
+
 export default function HomeContent() {
   const [pageData, setPageData] = useState<PageData | null>(null);
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -30,31 +42,32 @@ export default function HomeContent() {
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        // Track individual fetch progress
-        const totalSteps = 6; // One for each fetch
-        let completedSteps = 0;
+      const fetchers: { [K in keyof PageData]: () => Promise<PageData[K]> } = {
+        intro: getIntro,
+        career: getCareer,
+        projects: getProjects,
+        skills: getSkills,
+        resume: getResume,
+        videos: getVideos,
+      };
+      const keys = Object.keys(fetchers) as (keyof PageData)[];
 
-        const updateProgress = () => {
-          completedSteps++;
-          setLoadingProgress((completedSteps / totalSteps) * 100);
-        };
+      // Track individual fetch progress
+      let completedSteps = 0;
+      const updateProgress = () => {
+        completedSteps++;
+        setLoadingProgress((completedSteps / keys.length) * 100);
+      };
 
-        // Fetch all data with progress tracking
-        const [intro, career, projects, skills, resume, videos] = await Promise.all([
-          getIntro().then(res => { updateProgress(); return res; }),
-          getCareer().then(res => { updateProgress(); return res; }),
-          getProjects().then(res => { updateProgress(); return res; }),
-          getSkills().then(res => { updateProgress(); return res; }),
-          getResume().then(res => { updateProgress(); return res; }),
-          getVideos().then(res => { updateProgress(); return res; })
-        ]);
+      // Each section loads independently: one failed request must not block the page.
+      const results = await Promise.allSettled(keys.map((key) => fetchers[key]().finally(updateProgress)));
 
-        setPageData({ intro, career, projects, skills, resume, videos });
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        // Add error state handling here
-      }
+      const data: PageData = { ...EMPTY };
+      results.forEach((result, i) => {
+        if (result.status === 'fulfilled') Object.assign(data, { [keys[i]]: result.value });
+        else console.error(`Error fetching ${keys[i]}:`, result.reason);
+      });
+      setPageData(data);
     };
 
     fetchData();
@@ -74,15 +87,19 @@ export default function HomeContent() {
     );
   }
 
+  const { intro, career, skills, projects, resume } = pageData;
+  const videos = { ...pageData.videos, videos: playableVideos(pageData.videos) };
+
+  // A section (and its nav button) only exists while it has content to show.
   const sections = [
-    { id: "about", content: <Intro intro={pageData.intro} /> },
-    { id: "career", content: <CareerSection career={pageData.career} /> },
-    { id: "skills", content: <SkillsSection skills={pageData.skills} /> },
-    { id: "projects", content: <ProjectSection projects={pageData.projects} /> },
-    { id: "video", tall: true, content: <VideoSection videos={pageData.videos} /> },
-    { id: "resume", content: <ResumeSection resume={pageData.resume} /> },
-    { id: "inquiries", content: <ContactSection intro={pageData.intro} /> },
-  ];
+    { id: "about", show: hasContent.intro(intro), content: <Intro intro={intro} /> },
+    { id: "career", show: hasContent.career(career), content: <CareerSection career={career} /> },
+    { id: "skills", show: hasContent.skills(skills), content: <SkillsSection skills={skills} /> },
+    { id: "projects", show: hasContent.projects(projects), content: <ProjectSection projects={projects} /> },
+    { id: "video", show: videos.videos.length > 0, tall: true, content: <VideoSection videos={videos} /> },
+    { id: "resume", show: hasContent.resume(resume), content: <ResumeSection resume={resume} /> },
+    { id: "inquiries", show: hasContent.inquiries(intro), content: <ContactSection intro={intro} /> },
+  ].filter((section) => section.show);
 
   return <ClientLayout sections={sections} />;
 }

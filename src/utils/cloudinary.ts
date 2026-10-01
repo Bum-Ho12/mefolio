@@ -1,4 +1,7 @@
-const VIDEO_BASE = "https://res.cloudinary.com/din1gp1kc/video/upload";
+// One cloud name for playback and for admin uploads, so the two cannot drift apart.
+export const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "din1gp1kc";
+
+const VIDEO_BASE = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/video/upload`;
 
 // f_auto picks AV1/VP9/H.264 per browser, q_auto:eco compresses aggressively,
 // c_limit caps resolution without upscaling, ac_none strips the (muted) audio track.
