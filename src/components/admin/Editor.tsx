@@ -10,6 +10,7 @@ import type { Lookup } from '@/lib/content/adapters';
 import { EditorContext, type RefOption } from './EditorContext';
 import { FieldList } from './FieldInput';
 import PreviewPane from './PreviewPane';
+import SplitHandle, { useSplitRatio } from './SplitHandle';
 import { Button, StatusBadges } from './ui';
 
 type Values = Record<string, unknown>;
@@ -40,6 +41,9 @@ export default function Editor(props: EditorProps) {
     const [status, setStatus] = useState({ isPublished: props.isPublished, hasDraft: props.hasDraft });
     const [busy, setBusy] = useState<string | null>(null);
     const [tab, setTab] = useState<'edit' | 'preview'>('edit');
+    const [focusPreview, setFocusPreview] = useState(false);
+    const splitRatio = useSplitRatio();
+    const row = useRef<HTMLDivElement>(null);
 
     // Refs hold the latest values for the save loop without re-creating callbacks.
     const rev = useRef(props.initialRev);
@@ -104,6 +108,7 @@ export default function Editor(props: EditorProps) {
                 e.preventDefault();
                 save();
             }
+            if (e.key === 'Escape') setFocusPreview(false);
         };
         const onUnload = (e: BeforeUnloadEvent) => {
             if (dirty.current || inFlight.current) e.preventDefault();
@@ -207,12 +212,22 @@ export default function Editor(props: EditorProps) {
                     ))}
                 </div>
 
-                <div className="flex min-h-0 flex-1">
-                    <div className={`min-h-0 w-full overflow-y-auto p-4 sm:p-6 lg:block lg:w-[44%] lg:border-r lg:border-white/10 ${tab === 'edit' ? 'block' : 'hidden'}`}>
+                {/* Desktop: form | handle | preview. The form keeps a fixed share and never
+                    shrinks; the preview takes the rest and may shrink (min-w-0). In focus mode
+                    the form is only hidden, so its state and unsaved edits are kept. */}
+                <div ref={row} className="flex min-h-0 min-w-0 flex-1" style={{ '--form-w': `${(splitRatio * 100).toFixed(2)}%` } as React.CSSProperties}>
+                    <div className={`min-h-0 w-full overflow-y-auto p-4 sm:p-6 lg:w-[var(--form-w)] lg:min-w-[360px] lg:flex-shrink-0 ${focusPreview ? 'lg:hidden' : 'lg:block'} ${tab === 'edit' ? 'block' : 'hidden'}`}>
                         <FieldList fields={def.fields} values={values} onChange={onChange} />
                     </div>
-                    <div className={`min-h-0 flex-1 lg:block ${tab === 'preview' ? 'block' : 'hidden'}`}>
-                        <PreviewPane type={def.type} values={values} lookup={props.lookup} />
+                    {!focusPreview && <SplitHandle row={row} />}
+                    <div className={`min-h-0 min-w-0 flex-1 lg:block ${tab === 'preview' ? 'block' : 'hidden'}`}>
+                        <PreviewPane
+                            type={def.type}
+                            values={values}
+                            lookup={props.lookup}
+                            focused={focusPreview}
+                            onToggleFocus={() => setFocusPreview((f) => !f)}
+                        />
                     </div>
                 </div>
             </div>
