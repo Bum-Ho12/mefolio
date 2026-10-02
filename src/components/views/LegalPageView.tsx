@@ -1,9 +1,8 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { PortableText } from '@portabletext/react';
-import { TypedObject } from '@portabletext/types';
 import MeStoreFooter from '@/components/store/MeFooter';
+import RichText from '@/components/RichText';
 import PageHero from './PageHero';
 
 export interface LegalPageData {
@@ -44,15 +43,7 @@ export default function LegalPageView({ data, heading }: { data: LegalPageData |
                     </motion.div>
 
                     <div className="bg-white/5 rounded-lg p-8 backdrop-blur-sm border border-white/10">
-                        {content ? (
-                            <div className="prose prose-invert max-w-none">
-                                {Array.isArray(content) ? (
-                                    <PortableText value={content.filter((item): item is TypedObject => typeof item === 'object')} />
-                                ) : (
-                                    <p>{String(content)}</p>
-                                )}
-                            </div>
-                        ) : null}
+                        {Array.isArray(content) ? <RichText value={content} /> : content ? <p>{String(content)}</p> : null}
                     </div>
                 </div>
             </div>

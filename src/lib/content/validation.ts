@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { CLOUDINARY_ID, resolveVideo } from '@/utils/video';
+import { MEDIA_BLOCKS } from './blocks';
 import { DOC_ID, FILE_REF, IMAGE_REF, KEY, type DocTypeDef, type Field } from './fields';
 
 export type Mode = 'draft' | 'publish';
@@ -37,38 +38,63 @@ const file = z.strictObject({
 
 const reference = z.strictObject({ _type: z.literal('reference'), _ref: ref, _weak: z.boolean().optional() });
 
-const blocks = z
-    .array(
-        z.strictObject({
-            _type: z.literal('block'),
-            _key: key,
-            style: z.enum(BLOCK_STYLES).optional(),
-            listItem: z.enum(['bullet', 'number']).optional(),
-            level: z.number().int().min(1).max(6).optional(),
-            markDefs: z.array(z.strictObject({ _type: z.literal('link'), _key: key, href: safeUrl })).max(50).optional(),
-            children: z
-                .array(
-                    z.strictObject({
-                        _type: z.literal('span'),
-                        _key: key,
-                        text: z.string().max(20_000),
-                        marks: z.array(z.string().max(64)).max(10).optional(),
-                    }),
-                )
-                .min(1)
-                .max(500),
-        }).superRefine((block, ctx) => {
-            const linkKeys = new Set((block.markDefs ?? []).map((m) => m._key));
-            for (const child of block.children) {
-                for (const mark of child.marks ?? []) {
-                    if (!DECORATORS.has(mark) && !linkKeys.has(mark)) {
-                        ctx.addIssue({ code: 'custom', message: `Unknown mark "${mark}"` });
-                    }
-                }
+const textBlock = z.strictObject({
+    _type: z.literal('block'),
+    _key: key,
+    style: z.enum(BLOCK_STYLES).optional(),
+    listItem: z.enum(['bullet', 'number']).optional(),
+    level: z.number().int().min(1).max(6).optional(),
+    markDefs: z.array(z.strictObject({ _type: z.literal('link'), _key: key, href: safeUrl })).max(50).optional(),
+    children: z
+        .array(
+            z.strictObject({
+                _type: z.literal('span'),
+                _key: key,
+                text: z.string().max(20_000),
+                marks: z.array(z.string().max(64)).max(10).optional(),
+            }),
+        )
+        .min(1)
+        .max(500),
+}).superRefine((block, ctx) => {
+    const linkKeys = new Set((block.markDefs ?? []).map((m) => m._key));
+    for (const child of block.children) {
+        for (const mark of child.marks ?? []) {
+            if (!DECORATORS.has(mark) && !linkKeys.has(mark)) {
+                ctx.addIssue({ code: 'custom', message: `Unknown mark "${mark}"` });
             }
-        }),
-    )
-    .max(2000);
+        }
+    }
+});
+
+const MAX_BLOCKS = 2000;
+const blocks = z.array(textBlock).max(MAX_BLOCKS);
+
+// Paragraphs mixed with media blocks. Each item is checked against the schema for its
+// own `_type`, so errors point at the field inside the block rather than at a union.
+function mediaBlocks(mode: Mode) {
+    const schemas = new Map<string, z.ZodType>([['block', textBlock]]);
+    for (const def of MEDIA_BLOCKS) schemas.set(def.type, objectSchema(def.fields, mode, { _key: key, _type: z.literal(def.type) }));
+
+    return z
+        .array(
+            z.looseObject({ _type: z.string() }).superRefine((item, ctx) => {
+                const schema = schemas.get(item._type);
+                if (!schema) {
+                    ctx.addIssue({ code: 'custom', message: `Unknown block type "${item._type.slice(0, 40)}"` });
+                    return;
+                }
+                const result = schema.safeParse(item);
+                if (!result.success) {
+                    for (const issue of result.error.issues) ctx.addIssue({ code: 'custom', path: [...issue.path], message: issue.message });
+                }
+                if (mode === 'publish' && item._type === 'galleryBlock' && (!Array.isArray(item.images) || item.images.length < 2)) {
+                    ctx.addIssue({ code: 'custom', path: ['images'], message: 'Add at least two images' });
+                }
+            }),
+        )
+        .max(MAX_BLOCKS);
+}
 
 function fieldSchema(field: Field, mode: Mode): z.ZodType {
     switch (field.kind) {
@@ -114,7 +140,7 @@ function fieldSchema(field: Field, mode: Mode): z.ZodType {
         case 'objects':
             return z.array(objectSchema(field.of, mode, { _key: key })).max(MAX_ARRAY);
         case 'blocks':
-            return blocks;
+            return field.media ? mediaBlocks(mode) : blocks;
         case 'videoSource':
             return z.string().regex(CLOUDINARY_ID, 'Invalid Cloudinary public id');
         case 'videoUrl':

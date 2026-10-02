@@ -2,9 +2,8 @@
 
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { PortableText } from '@portabletext/react';
-import { TypedObject } from '@portabletext/types';
 import MeStoreFooter from '@/components/store/MeFooter';
+import RichText from '@/components/RichText';
 import PageHero from './PageHero';
 import { AboutData } from '@/utils/types';
 
@@ -31,13 +30,7 @@ export default function AboutView({ data }: { data: AboutData | null }) {
                         <div className="bg-white/5 h-1 w-24 mx-auto rounded-full"></div>
                     </motion.div>
 
-                    {data?.content && (
-                        <div className="prose prose-invert max-w-none mb-16">
-                            {Array.isArray(data.content) && data.content.every(item => typeof item === 'object') ? (
-                                <PortableText value={data.content as TypedObject[]} />
-                            ) : null}
-                        </div>
-                    )}
+                    {data?.content && <RichText value={data.content} className="mb-16" />}
 
                     {data?.team && data.team.length > 0 && (
                         <div className="mt-16">

@@ -8,9 +8,12 @@ import SkillsSection from '@/components/SkillsSection';
 import ProjectSection from '@/components/ProjectSection';
 import ResumeSection from '@/components/ResumeSection';
 import VideoSection from '@/components/VideoSection';
+import JourneysSection from '@/components/JourneysSection';
 import ContactSection from '@/components/ContactSection';
 import StoreItemPage from '@/components/StoreItemPage';
 import AboutView from '@/components/views/AboutView';
+import JourneysView from '@/components/views/JourneysView';
+import JourneyView from '@/components/views/JourneyView';
 import ContactView from '@/components/views/ContactView';
 import LegalPageView from '@/components/views/LegalPageView';
 import StoreView from '@/components/views/StoreView';
@@ -72,6 +75,16 @@ function render({ type, doc, lookup }: PreviewState): ReactNode {
             return homeSection('resume', <ResumeSection resume={A.toResume(doc)} />);
         case 'videos':
             return homeSection('video', <VideoSection videos={A.toVideos(doc)} />, true);
+        case 'journeys':
+            // This document titles both the home section and the /journeys page.
+            return (
+                <>
+                    {homeSection('journeys', <JourneysSection journeys={A.toJourneysSection(doc, lookup)} />)}
+                    <JourneysView data={A.toJourneysPage(doc, lookup)} />
+                </>
+            );
+        case 'journey':
+            return <JourneyView journey={A.toJourney(doc)} />;
         case 'store': {
             const { storeData, items } = A.toStore(doc, lookup);
             return <StoreView storeData={storeData} items={items} />;

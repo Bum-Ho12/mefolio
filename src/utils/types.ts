@@ -193,3 +193,42 @@ export interface Videos {
     title: string;
     videos: VideoItem[];
 }
+
+// A journey's card data, used by the home section and the /journeys list.
+export interface JourneySummary {
+    slug: string;
+    title: string;
+    excerpt?: string;
+    cover?: string;
+    date: string;
+    tags: string[];
+    featured: boolean;
+}
+
+export interface JourneyLink {
+    slug: string;
+    title: string;
+}
+
+// `body` is raw Portable Text: paragraphs mixed with the media blocks declared in
+// lib/content/blocks.ts. Asset URLs are derived from the refs when rendering.
+export interface Journey extends JourneySummary {
+    body: unknown[];
+    older?: JourneyLink;
+    newer?: JourneyLink;
+}
+
+// Home section: at most three featured journeys.
+export interface JourneysSectionData {
+    title: string;
+    journeys: JourneySummary[];
+}
+
+export interface JourneysPageData {
+    title: string;
+    description?: string;
+    heroImage?: string;
+    heroTitle?: string;
+    heroSubtitle?: string;
+    journeys: JourneySummary[];
+}

@@ -1,6 +1,7 @@
 // src/services/api/sanity.ts
 import { sanityClient } from '@/utils/sanity';
-import { AboutData, Career, ContactData, Intro, PrivacyPolicyData, Projects, Resume, Skills, StoreData, StoreItem, TermsConditionsData, Videos } from '@/utils/types';
+import { HOME_JOURNEYS } from '@/utils/sections';
+import { AboutData, Career, ContactData, Intro, Journey, JourneysPageData, JourneysSectionData, PrivacyPolicyData, Projects, Resume, Skills, StoreData, StoreItem, TermsConditionsData, Videos } from '@/utils/types';
 
 // Sanity returns null for a missing document and for a missing array field. Every list
 // is wrapped in coalesce(…, []) and every fetcher falls back to an empty shape, so
@@ -197,6 +198,52 @@ export async function getVideos(): Promise<Videos> {
     }`;
     const data = await sanityClient.fetch<Videos | null>(query);
     return data ?? { title: 'Videos', videos: [] };
+}
+
+const JOURNEY_SUMMARY = `
+    "slug": slug.current,
+    title,
+    excerpt,
+    "cover": coverImage.asset->url,
+    date,
+    "tags": coalesce(tags, []),
+    "featured": featured == true
+`;
+// A journey without a slug has no page to link to.
+const JOURNEY_FILTER = `_type == "journey" && defined(slug.current)`;
+
+// Home section: the newest featured journeys.
+export async function getJourneysSection(): Promise<JourneysSectionData> {
+    const query = `{
+        "title": coalesce(*[_type == "journeys"][0].title, "Journeys"),
+        "journeys": *[${JOURNEY_FILTER} && featured == true] | order(date desc)[0...${HOME_JOURNEYS}]{${JOURNEY_SUMMARY}}
+    }`;
+    return await sanityClient.fetch<JourneysSectionData>(query);
+}
+
+export async function getJourneysPage(): Promise<JourneysPageData> {
+    const query = `{
+        ...*[_type == "journeys"][0]{
+            title,
+            description,
+            "heroImage": heroImage.asset->url,
+            heroTitle,
+            heroSubtitle
+        },
+        "journeys": *[${JOURNEY_FILTER}] | order(date desc){${JOURNEY_SUMMARY}}
+    }`;
+    const data = await sanityClient.fetch<JourneysPageData>(query);
+    return { ...data, title: data.title || 'Journeys' };
+}
+
+export async function getJourney(slug: string): Promise<Journey | null> {
+    const query = `*[${JOURNEY_FILTER} && slug.current == $slug][0]{
+        ${JOURNEY_SUMMARY},
+        "body": coalesce(body, []),
+        "older": *[${JOURNEY_FILTER} && date < ^.date] | order(date desc)[0]{"slug": slug.current, title},
+        "newer": *[${JOURNEY_FILTER} && date > ^.date] | order(date asc)[0]{"slug": slug.current, title}
+    }`;
+    return await sanityClient.fetch<Journey | null>(query, { slug });
 }
 
 // Fetch About page data

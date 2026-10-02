@@ -154,6 +154,41 @@ export const DOC_TYPES: DocTypeDef[] = [
             },
         ],
     },
+    {
+        type: 'journeys',
+        title: 'Journeys page',
+        group: 'Portfolio',
+        singleton: true,
+        titleField: 'title',
+        previewDeps: ['journey'],
+        paths: ['/', '/journeys'],
+        fields: [
+            { ...hero[0], description: 'Heading of the home section and of the /journeys page.' },
+            ...hero.slice(1),
+            { kind: 'text', name: 'description', title: 'Description', rows: 3 },
+        ],
+    },
+    {
+        type: 'journey',
+        title: 'Journey',
+        pluralTitle: 'Journeys',
+        group: 'Portfolio',
+        singleton: false,
+        titleField: 'title',
+        subtitleField: 'excerpt',
+        imageField: 'coverImage',
+        paths: ['/', '/journeys'],
+        fields: [
+            { kind: 'string', name: 'title', title: 'Title', required: true, max: 160 },
+            { kind: 'slug', name: 'slug', title: 'Slug (URL)', source: 'title', required: true },
+            { kind: 'text', name: 'excerpt', title: 'Excerpt', rows: 3, max: 300, description: 'Shown on cards and in link previews.' },
+            { kind: 'image', name: 'coverImage', title: 'Cover image', required: true },
+            { kind: 'date', name: 'date', title: 'Date', required: true },
+            { kind: 'tags', name: 'tags', title: 'Tags' },
+            { kind: 'boolean', name: 'featured', title: 'Featured', description: 'The home page shows the three newest featured journeys.' },
+            { kind: 'blocks', name: 'body', title: 'Body', media: true },
+        ],
+    },
 
     // ── Store ──────────────────────────────────────────────────
     {

@@ -89,5 +89,11 @@ as-is, so add a poster image for them.
 **Empty sections:** a home section and its nav button only appear while it has content. The rules live in
 `src/utils/sections.ts` and the editor shows a notice when a document would be hidden.
 
+**Journeys:** each journey (`/journeys/<slug>`) has a cover, a date and a body of paragraphs mixed with image,
+video and gallery blocks. In the editor, drag a block's handle to reorder it and use the Left / Inline / Wide /
+Full / Right control to place it; the preview shows the result per device. The home page shows the three newest
+journeys marked *Featured* (the section is hidden while none is); `/journeys` lists all of them. Block types are
+declared in `src/lib/content/blocks.ts` and rendered by `src/components/RichText.tsx`.
+
 **Adding a content type:** add an entry to `src/lib/content/registry.ts`, an adapter in `src/lib/content/adapters.ts`,
 and a case in `src/components/admin/PreviewRenderer.tsx`.

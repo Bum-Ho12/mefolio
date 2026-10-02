@@ -93,6 +93,7 @@ async function assertUniqueSlugs(def: DocTypeDef, id: string, data: Record<strin
 function revalidate(def: DocTypeDef) {
     for (const path of def.paths ?? ['/']) revalidatePath(path);
     if (def.type === 'storeItem' || def.type === 'privacyPolicy') revalidatePath('/store/[id]', 'page');
+    if (def.type === 'journey') revalidatePath('/journeys/[slug]', 'page');
 }
 
 export async function saveDraft(type: string, id: string, data: unknown, baseRev: string | null): Promise<ActionResult> {
