@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const MINIMUM_LOADING_TIME = 1500; // 4 seconds minimum to show animation
-const STEP_DURATION = 800; // Duration for each loading step
+const COUNT_DURATION = 2500; // Fastest the counter may go from 0 to 100
+const HOLD_AT_COMPLETE = 400; // Pause on 100% before the exit animation
 
 interface LoadingScreenProps {
     onLoadingComplete: () => void;
@@ -10,26 +10,55 @@ interface LoadingScreenProps {
     isDataLoaded: boolean;
 }
 
+const statusFor = (value: number) => {
+    if (value >= 80) return 'FINAL CHECKS';
+    if (value >= 60) return 'RENDERING COMPONENTS';
+    if (value >= 40) return 'FETCHING PORTFOLIO DATA';
+    if (value >= 20) return 'ESTABLISHING DATABASE CONNECTION';
+    return 'INITIALIZING SYSTEMS';
+};
+
 const LoadingScreen = ({ onLoadingComplete, progress, isDataLoaded }: LoadingScreenProps) => {
-    const [status, setStatus] = useState('INITIALIZING SYSTEMS');
+    const [displayed, setDisplayed] = useState(0);
     const [isVisible, setIsVisible] = useState(true);
+    const progressRef = useRef(progress);
 
     useEffect(() => {
-        if (progress >= 20) setStatus('ESTABLISHING DATABASE CONNECTION');
-        if (progress >= 40) setStatus('FETCHING PORTFOLIO DATA');
-        if (progress >= 60) setStatus('RENDERING COMPONENTS');
-        if (progress >= 80) setStatus('FINAL CHECKS');
+        progressRef.current = progress;
+    }, [progress]);
 
-        // Ensure minimum display time and complete loading before hiding
-        if (isDataLoaded) {
-        const timer = setTimeout(() => {
+    // The requests resolve in a burst, so the shown value counts up towards the real
+    // progress at a capped rate instead of jumping with it.
+    useEffect(() => {
+        let frame: number;
+        let last = performance.now();
+        const tick = (now: number) => {
+            const step = ((now - last) / COUNT_DURATION) * 100;
+            last = now;
+            setDisplayed((value) => Math.min(progressRef.current, value + step));
+            frame = requestAnimationFrame(tick);
+        };
+        frame = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(frame);
+    }, []);
+
+    const isComplete = isDataLoaded && displayed >= 100;
+
+    useEffect(() => {
+        if (!isComplete) return;
+        let exitTimer: ReturnType<typeof setTimeout>;
+        const holdTimer = setTimeout(() => {
             setIsVisible(false);
-            setTimeout(onLoadingComplete, 500); // Wait for exit animation
-        }, MINIMUM_LOADING_TIME);
+            exitTimer = setTimeout(onLoadingComplete, 500); // Wait for exit animation
+        }, HOLD_AT_COMPLETE);
 
-        return () => clearTimeout(timer);
-        }
-    }, [progress, isDataLoaded, onLoadingComplete]);
+        return () => {
+            clearTimeout(holdTimer);
+            clearTimeout(exitTimer);
+        };
+    }, [isComplete, onLoadingComplete]);
+
+    const percent = Math.round(displayed);
 
     return (
         <AnimatePresence>
@@ -118,16 +147,14 @@ const LoadingScreen = ({ onLoadingComplete, progress, isDataLoaded }: LoadingScr
                     animate={{ opacity: [0.8, 1] }}
                     transition={{ duration: 1.5, repeat: Infinity }}
                 >
-                    {progress}% COMPLETE
+                    {percent}% COMPLETE
                 </motion.div>
 
                 {/* Progress Bar */}
                 <div className="w-64 h-2 bg-blue-900/30 rounded-full overflow-hidden">
-                    <motion.div
+                    <div
                     className="h-full bg-blue-400 rounded-full"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progress}%` }}
-                    transition={{ duration: STEP_DURATION / 1000, ease: "easeOut" }}
+                    style={{ width: `${displayed}%` }}
                     />
                 </div>
 
@@ -138,7 +165,7 @@ const LoadingScreen = ({ onLoadingComplete, progress, isDataLoaded }: LoadingScr
                     animate={{ opacity: [0.7, 1] }}
                     transition={{ duration: 1.5, repeat: Infinity }}
                     >
-                    {status}
+                    {statusFor(displayed)}
                     </motion.span>
                 </div>
 
@@ -149,13 +176,13 @@ const LoadingScreen = ({ onLoadingComplete, progress, isDataLoaded }: LoadingScr
                         animate={{ opacity: [0.6, 1] }}
                         transition={{ duration: 2, repeat: Infinity }}
                     >
-                        CPU: {Math.min(100, Math.round(progress * 1.2))}%
+                        CPU: {Math.min(100, Math.round(displayed * 1.2))}%
                     </motion.div>
                     <motion.div
                         animate={{ opacity: [0.6, 1] }}
                         transition={{ duration: 2, delay: 0.3, repeat: Infinity }}
                     >
-                        MEMORY: {Math.min(100, Math.round(progress * 0.8))}%
+                        MEMORY: {Math.min(100, Math.round(displayed * 0.8))}%
                     </motion.div>
                     </div>
                     <div>
