@@ -23,7 +23,7 @@ function xhrPost<T>(url: string, body: FormData, onProgress?: Progress): Promise
 
 // Large photos are re-encoded in the browser so they fit the server's 4 MB limit.
 async function shrinkImage(file: File): Promise<File> {
-    if (file.size <= TARGET || file.type === 'image/gif') return file;
+    if (file.size <= TARGET || file.type === 'image/gif' || file.type === 'image/svg+xml') return file;
     const bitmap = await createImageBitmap(file);
     const scale = Math.min(1, MAX_DIMENSION / Math.max(bitmap.width, bitmap.height));
     const canvas = document.createElement('canvas');
@@ -38,11 +38,12 @@ async function shrinkImage(file: File): Promise<File> {
     throw new Error('Image is too large even after compression');
 }
 
-export async function uploadAsset(file: File, kind: 'image' | 'file', onProgress?: Progress) {
+export async function uploadAsset(file: File, kind: 'image' | 'file', onProgress?: Progress, options: { svg?: boolean } = {}) {
     const prepared = kind === 'image' ? await shrinkImage(file) : file;
     if (prepared.size > MAX_UPLOAD) throw new Error('File too large (max 4 MB)');
     const body = new FormData();
     body.set('kind', kind);
+    if (options.svg) body.set('svg', '1');
     body.set('file', prepared);
     return xhrPost<{ ref: string; url: string }>('/api/admin/upload', body, onProgress);
 }
