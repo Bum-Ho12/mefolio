@@ -1,6 +1,7 @@
 // Converts between Portable Text blocks and a small inline markup the editor shows
-// per paragraph: **bold**, *italic*, `code`, [link text](https://…). A backslash
-// escapes any of * ` [ ] \ so literal characters survive the round trip.
+// per paragraph: **bold**, *italic*, __underline__, ~~strike~~, `code`,
+// [link text](https://…). A backslash escapes any character, so literal * ` [ ] \ and
+// doubled _ or ~ survive the round trip.
 
 export interface Span { _type: 'span'; _key: string; text: string; marks: string[] }
 export interface LinkDef { _type: 'link'; _key: string; href: string }
@@ -14,11 +15,14 @@ export interface Block {
     children: Span[];
 }
 
-const DECORATOR_TOKENS: [string, string][] = [['**', 'strong'], ['*', 'em'], ['`', 'code']];
-const TOKEN_FOR: Record<string, string> = { strong: '**', em: '*', code: '`' };
+const DECORATOR_TOKENS: [string, string][] = [['**', 'strong'], ['*', 'em'], ['__', 'underline'], ['~~', 'strike-through'], ['`', 'code']];
+const TOKEN_FOR: Record<string, string> = { strong: '**', em: '*', underline: '__', 'strike-through': '~~', code: '`' };
 const ESCAPABLE = /[*`[\]\\]/g;
+// A single _ or ~ is ordinary text. It is escaped only where it could pair up with a
+// neighbour (or with a token placed next to the span) to form __ or ~~.
+const PAIRABLE = /(?<=_)_|_(?=_)|^_|_$|(?<=~)~|~(?=~)|^~|~$/g;
 
-const escape = (text: string) => text.replace(ESCAPABLE, (c) => `\\${c}`);
+const escape = (text: string) => text.replace(ESCAPABLE, (c) => `\\${c}`).replace(PAIRABLE, (c) => `\\${c}`);
 
 export function blockToMarkup(block: Partial<Block>): string {
     const links = new Map((block.markDefs ?? []).map((d) => [d._key, d.href]));

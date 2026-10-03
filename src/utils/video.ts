@@ -63,10 +63,12 @@ export function ownCloudinaryId(link: string): string | null {
     return CLOUDINARY_ID.test(id) ? id : null;
 }
 
-export function resolveVideo(item: VideoInput, width = 960): VideoSource {
+// By default a video is a muted, looping background clip. With `player` it is something
+// the visitor starts themselves: sound is kept and embeds show their controls.
+export function resolveVideo(item: VideoInput, width = 960, { player = false } = {}): VideoSource {
     if (item.publicId) {
         if (!CLOUDINARY_ID.test(item.publicId)) return { kind: 'unsupported', reason: 'Invalid Cloudinary public id' };
-        return { kind: 'cloudinary', src: videoUrl(item.publicId, width), poster: posterUrl(item.publicId, width) };
+        return { kind: 'cloudinary', src: videoUrl(item.publicId, width, player), poster: posterUrl(item.publicId, width) };
     }
     if (!item.url) return { kind: 'unsupported', reason: 'No video source' };
 
@@ -84,7 +86,9 @@ export function resolveVideo(item: VideoInput, width = 960): VideoSource {
     if (yt) {
         return {
             kind: 'youtube',
-            embedSrc: `https://www.youtube-nocookie.com/embed/${yt}?autoplay=1&mute=1&loop=1&playlist=${yt}&controls=0&playsinline=1&rel=0&modestbranding=1`,
+            embedSrc: player
+                ? `https://www.youtube-nocookie.com/embed/${yt}?playsinline=1&rel=0&modestbranding=1`
+                : `https://www.youtube-nocookie.com/embed/${yt}?autoplay=1&mute=1&loop=1&playlist=${yt}&controls=0&playsinline=1&rel=0&modestbranding=1`,
             poster: item.poster ?? `https://i.ytimg.com/vi/${yt}/hqdefault.jpg`,
         };
     }
@@ -92,7 +96,9 @@ export function resolveVideo(item: VideoInput, width = 960): VideoSource {
     if (vimeo) {
         return {
             kind: 'vimeo',
-            embedSrc: `https://player.vimeo.com/video/${vimeo}?autoplay=1&muted=1&loop=1&background=1&dnt=1`,
+            embedSrc: player
+                ? `https://player.vimeo.com/video/${vimeo}?dnt=1`
+                : `https://player.vimeo.com/video/${vimeo}?autoplay=1&muted=1&loop=1&background=1&dnt=1`,
             poster: item.poster,
         };
     }

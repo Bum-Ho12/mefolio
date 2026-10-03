@@ -28,7 +28,9 @@ export type Field =
     | (Base & { kind: 'reference'; to: string })
     | (Base & { kind: 'references'; to: string })
     | (Base & { kind: 'objects'; of: Field[]; itemTitle: string; itemSubtitle?: string })
-    | (Base & { kind: 'blocks' })
+    // Portable Text. With `media`, image/video/gallery blocks (lib/content/blocks.ts) can
+    // sit between the paragraphs.
+    | (Base & { kind: 'blocks'; media?: boolean })
     // One control for a video's source: writes a Cloudinary public id to this field, or
     // an https link to the sibling field named by `urlField`. Exactly one is kept.
     | (Base & { kind: 'videoSource'; urlField: string })
@@ -39,6 +41,8 @@ export type FieldKind = Field['kind'];
 export interface DocTypeDef {
     type: string;
     title: string;
+    // Heading of the document list; defaults to `title` + "s".
+    pluralTitle?: string;
     group: 'Portfolio' | 'Store' | 'Pages';
     // Singletons are read by the site as `*[_type == X][0]`; the admin keeps exactly one.
     singleton: boolean;

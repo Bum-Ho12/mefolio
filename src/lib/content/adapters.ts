@@ -1,7 +1,8 @@
 import { assetUrl } from '@/lib/sanity/config';
+import { HOME_JOURNEYS } from '@/utils/sections';
 import type {
-    AboutData, Career, ContactData, Intro, PrivacyPolicyData, Project, Projects, Resume, Skills, StoreData, StoreItem,
-    TermsConditionsData, Videos,
+    AboutData, Career, ContactData, Intro, Journey, JourneysPageData, JourneysSectionData, JourneySummary, PrivacyPolicyData, Project,
+    Projects, Resume, Skills, StoreData, StoreItem, TermsConditionsData, Videos,
 } from '@/utils/types';
 
 // Converts raw editor documents into the shapes produced by the GROQ projections in
@@ -162,4 +163,38 @@ export const toContact = (d: Doc): ContactData => ({
     address: str(d.address),
     socialLinks: arr(d.socialLinks).map((l) => ({ platform: str(l.platform), url: str(l.url) })),
     formIntro: str(d.formIntro),
+});
+
+export const toJourneySummary = (d: Doc): JourneySummary => ({
+    slug: str((d.slug as { current?: string } | undefined)?.current),
+    title: str(d.title),
+    excerpt: str(d.excerpt) || undefined,
+    cover: imageUrl(d.coverImage),
+    date: str(d.date),
+    tags: arr<string>(d.tags),
+    featured: d.featured === true,
+});
+
+export const toJourney = (d: Doc): Journey => ({ ...toJourneySummary(d), body: arr<unknown>(d.body) });
+
+// Every journey the preview knows about, newest first, as the /journeys page lists them.
+const journeysIn = (lookup: Lookup) =>
+    Object.values(lookup)
+        .filter((doc) => doc._type === 'journey')
+        .map(toJourneySummary)
+        .filter((j) => j.slug)
+        .sort((a, b) => b.date.localeCompare(a.date));
+
+export const toJourneysSection = (d: Doc, lookup: Lookup): JourneysSectionData => ({
+    title: str(d.title) || 'Journeys',
+    journeys: journeysIn(lookup).filter((j) => j.featured).slice(0, HOME_JOURNEYS),
+});
+
+export const toJourneysPage = (d: Doc, lookup: Lookup): JourneysPageData => ({
+    title: str(d.title) || 'Journeys',
+    description: str(d.description) || undefined,
+    heroImage: imageUrl(d.heroImage),
+    heroTitle: str(d.heroTitle) || undefined,
+    heroSubtitle: str(d.heroSubtitle) || undefined,
+    journeys: journeysIn(lookup),
 });

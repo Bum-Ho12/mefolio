@@ -21,6 +21,9 @@ export default function ClientLayout({ sections }: { sections: SectionData[] }) 
     const [scrollEl, setScrollEl] = useState<HTMLDivElement | null>(null);
     const scrollRef = useMemo(() => (scrollEl ? { current: scrollEl } : null), [scrollEl]);
     const isScrolling = useRef(false);
+    const navRef = useRef<HTMLDivElement>(null);
+    // The address is only rewritten once any section named in it has been restored.
+    const hashRestored = useRef(false);
 
     const scrollToSection = (id: string) => {
         if (isScrolling.current) return;
@@ -34,6 +37,32 @@ export default function ClientLayout({ sections }: { sections: SectionData[] }) 
             }, 1000);
         }
     };
+
+    // Arriving with a section in the address (a link to /#journeys, or Back from another
+    // page) opens the page on that section instead of the first one.
+    useEffect(() => {
+        if (!scrollEl || hashRestored.current) return;
+        hashRestored.current = true;
+        const id = decodeURIComponent(window.location.hash.slice(1));
+        const target = sectionIds.includes(id) ? document.getElementById(id) : null;
+        if (target) scrollEl.scrollTo({ top: target.offsetTop, behavior: "instant" });
+    }, [scrollEl, sectionIds]);
+
+    // The address follows the section on screen, so leaving and coming back returns here.
+    useEffect(() => {
+        if (!hashRestored.current) return;
+        const { pathname, search } = window.location;
+        const hash = activeSection && activeSection !== sectionIds[0] ? `#${activeSection}` : "";
+        if (hash !== window.location.hash) window.history.replaceState(window.history.state, "", `${pathname}${search}${hash}`);
+    }, [activeSection, sectionIds]);
+
+    // The nav scrolls sideways on narrow screens; keep the active button in view.
+    useEffect(() => {
+        const nav = navRef.current;
+        const button = nav?.querySelector<HTMLElement>('[aria-current="true"]');
+        if (!nav || !button) return;
+        nav.scrollTo({ left: button.offsetLeft - (nav.clientWidth - button.offsetWidth) / 2, behavior: "smooth" });
+    }, [activeSection, isAboutSection]);
 
     useEffect(() => {
         if (!scrollEl) return;
@@ -104,12 +133,15 @@ export default function ClientLayout({ sections }: { sections: SectionData[] }) 
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
                     >
-                        <div className=" w-full flex gap-2 sm:gap-4 md:gap-6 relative items-center justify-center">
+                        {/* Centered by auto margins on the first and last button rather than
+                            justify-center, so a row wider than the screen can be scrolled to both ends. */}
+                        <div ref={navRef} className="w-full flex gap-2 sm:gap-4 md:gap-6 relative items-center overflow-x-auto scrollbar-hide [&>:first-child]:ml-auto [&>:last-child]:mr-auto">
                             {sectionIds.slice(1).map((id) => (
                                 <button
                                     key={id}
                                     onClick={() => scrollToSection(id)}
-                                    className={`relative px-2 sm:px-3 md:px-4 py-1 rounded-full transition-colors text-sm sm:text-base ${
+                                    aria-current={activeSection === id}
+                                    className={`relative shrink-0 px-2 sm:px-3 md:px-4 py-1 rounded-full transition-colors text-sm sm:text-base ${
                                         activeSection === id
                                             ? "bg-white text-black font-bold"
                                             : "text-white hover:bg-white/30"

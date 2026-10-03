@@ -2,7 +2,7 @@
 "use client"
 
 import ClientLayout from "@/components/ClientLayout";
-import { getIntro, getCareer, getProjects, getSkills, getResume, getVideos } from "@/services/api/sanity";
+import { getIntro, getCareer, getProjects, getSkills, getResume, getVideos, getJourneysSection } from "@/services/api/sanity";
 import Intro from "@/components/Intro";
 import CareerSection from "@/components/CareerSection";
 import ResumeSection from "@/components/ResumeSection";
@@ -10,8 +10,9 @@ import SkillsSection from "@/components/SkillsSection";
 import ProjectSection from "@/components/ProjectSection";
 import ContactSection from "@/components/ContactSection";
 import VideoSection from "@/components/VideoSection";
+import JourneysSection from "@/components/JourneysSection";
 import { useEffect, useState } from "react";
-import { Career, Intro as IntroType, Projects, Skills, Resume, Videos } from "@/utils/types";
+import { Career, Intro as IntroType, JourneysSectionData, Projects, Skills, Resume, Videos } from "@/utils/types";
 import LoadingScreen from '@/components/LoadingScreen';
 import { hasContent, playableVideos } from '@/utils/sections';
 
@@ -22,6 +23,7 @@ interface PageData {
   skills: Skills;
   resume: Resume;
   videos: Videos;
+  journeys: JourneysSectionData;
 }
 
 // What a section gets when its request fails: the same shape as "no content", so the
@@ -33,14 +35,20 @@ const EMPTY: PageData = {
   skills: { languages: [], frameworks: [], tools: [] },
   resume: {},
   videos: { title: 'Videos', videos: [] },
+  journeys: { title: 'Journeys', journeys: [] },
 };
 
+// Kept for the life of the tab, so coming back from another page (a journey, the store)
+// shows the home page straight away instead of replaying the loading screen.
+let cached: PageData | null = null;
+
 export default function HomeContent() {
-  const [pageData, setPageData] = useState<PageData | null>(null);
+  const [pageData, setPageData] = useState<PageData | null>(cached);
   const [loadingProgress, setLoadingProgress] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!cached);
 
   useEffect(() => {
+    if (cached) return;
     const fetchData = async () => {
       const fetchers: { [K in keyof PageData]: () => Promise<PageData[K]> } = {
         intro: getIntro,
@@ -49,6 +57,7 @@ export default function HomeContent() {
         skills: getSkills,
         resume: getResume,
         videos: getVideos,
+        journeys: getJourneysSection,
       };
       const keys = Object.keys(fetchers) as (keyof PageData)[];
 
@@ -67,6 +76,8 @@ export default function HomeContent() {
         if (result.status === 'fulfilled') Object.assign(data, { [keys[i]]: result.value });
         else console.error(`Error fetching ${keys[i]}:`, result.reason);
       });
+      // A page where requests failed is not kept, so the next visit tries again.
+      if (results.every((result) => result.status === 'fulfilled')) cached = data;
       setPageData(data);
     };
 
@@ -87,7 +98,7 @@ export default function HomeContent() {
     );
   }
 
-  const { intro, career, skills, projects, resume } = pageData;
+  const { intro, career, skills, projects, resume, journeys } = pageData;
   const videos = { ...pageData.videos, videos: playableVideos(pageData.videos) };
 
   // A section (and its nav button) only exists while it has content to show.
@@ -96,6 +107,7 @@ export default function HomeContent() {
     { id: "career", show: hasContent.career(career), content: <CareerSection career={career} /> },
     { id: "skills", show: hasContent.skills(skills), content: <SkillsSection skills={skills} /> },
     { id: "projects", show: hasContent.projects(projects), content: <ProjectSection projects={projects} /> },
+    { id: "journeys", show: hasContent.journeys(journeys), content: <JourneysSection journeys={journeys} /> },
     { id: "video", show: videos.videos.length > 0, tall: true, content: <VideoSection videos={videos} /> },
     { id: "resume", show: hasContent.resume(resume), content: <ResumeSection resume={resume} /> },
     { id: "inquiries", show: hasContent.inquiries(intro), content: <ContactSection intro={intro} /> },

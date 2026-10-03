@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, Copy, ExternalLink, Plus, Trash2, X } from 'lucide-react';
 import { newKey, type Field } from '@/lib/content/fields';
-import type { Block } from '@/lib/content/portableText';
 import BlocksInput from './BlocksInput';
 import { FileInput, ImageInput, ImagesInput, VideoSourceInput } from './MediaInputs';
 import { useEditorContext } from './EditorContext';
@@ -158,7 +157,7 @@ function Control({ field, value, onChange, path, siblings, patch }: FieldProps) 
             // Edited through its videoSource sibling.
             return null;
         case 'blocks':
-            return <BlocksInput value={value as Block[] | undefined} onChange={onChange} />;
+            return <BlocksInput value={value} onChange={onChange} path={path} media={field.media} />;
         case 'reference': {
             const options = refOptions[field.to] ?? [];
             return (

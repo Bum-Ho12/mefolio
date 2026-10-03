@@ -23,7 +23,7 @@ export default async function TypePage({ params }: { params: Promise<{ type: str
     return (
         <div className="h-full overflow-y-auto px-4 py-6 sm:px-8">
             <div className="flex items-center justify-between gap-4 pl-10 md:pl-0">
-                <h1 className="text-2xl font-semibold">{def.title}s</h1>
+                <h1 className="text-2xl font-semibold">{def.pluralTitle ?? `${def.title}s`}</h1>
                 <Link href={`/admin/${type}/new`} className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium hover:bg-blue-500">
                     <Plus className="h-4 w-4" /> New
                 </Link>

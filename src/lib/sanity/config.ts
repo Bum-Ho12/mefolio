@@ -19,3 +19,10 @@ export function assetUrl(ref: string | undefined | null): string | undefined {
     if (file) return `${CDN}/files/${projectId}/${dataset}/${file[1]}.${file[2]}`;
     return undefined;
 }
+
+// URL and intrinsic size of an image asset, so it can be laid out before it loads.
+export function imageInfo(ref: string | undefined | null) {
+    const url = assetUrl(ref);
+    const size = /^image-[a-f0-9]+-(\d+)x(\d+)-[a-z0-9]+$/.exec(ref ?? '');
+    return url && size ? { url, width: Number(size[1]), height: Number(size[2]) } : undefined;
+}
