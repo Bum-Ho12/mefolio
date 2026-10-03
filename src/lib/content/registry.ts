@@ -27,7 +27,7 @@ const skillList = (name: string, title: string): Field => ({
     itemTitle: 'name',
     of: [
         { kind: 'string', name: 'name', title: 'Name', required: true },
-        { kind: 'image', name: 'icon', title: 'Icon' },
+        { kind: 'image', name: 'icon', title: 'Icon', svg: true },
     ],
 });
 

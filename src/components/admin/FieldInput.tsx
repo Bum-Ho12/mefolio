@@ -139,7 +139,7 @@ function Control({ field, value, onChange, path, siblings, patch }: FieldProps) 
         case 'tags':
             return <TagsInput id={path} value={value} onChange={onChange} suggestions={field.suggestions} />;
         case 'image':
-            return <ImageInput value={value} onChange={onChange} />;
+            return <ImageInput value={value} onChange={onChange} svg={field.svg} />;
         case 'images':
             return <ImagesInput value={value} onChange={onChange} />;
         case 'file':

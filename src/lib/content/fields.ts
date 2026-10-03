@@ -22,7 +22,9 @@ export type Field =
     | (Base & { kind: 'select'; options: { value: string; label: string }[] })
     | (Base & { kind: 'tags'; suggestions?: string[] })
     | (Base & { kind: 'color' })
-    | (Base & { kind: 'image' })
+    // `svg` also accepts SVG icons. Only enable it where the image is shown through an
+    // <img> tag, never inlined: SVG can carry script.
+    | (Base & { kind: 'image'; svg?: boolean })
     | (Base & { kind: 'file'; accept: 'pdf' })
     | (Base & { kind: 'images' })
     | (Base & { kind: 'reference'; to: string })
@@ -58,6 +60,7 @@ export interface DocTypeDef {
 }
 
 export const IMAGE_REF = /^image-[a-f0-9]{20,64}-\d{1,5}x\d{1,5}-(png|jpe?g|webp|gif|avif)$/;
+export const SVG_IMAGE_REF = /^image-[a-f0-9]{20,64}-\d{1,5}x\d{1,5}-svg$/;
 export const FILE_REF = /^file-[a-f0-9]{20,64}-pdf$/;
 export const DOC_ID = /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/;
 export const KEY = /^[A-Za-z0-9_-]{1,64}$/;

@@ -62,12 +62,12 @@ const Progress = ({ value }: { value: number | null }) =>
 
 const IMAGE_ACCEPT = 'image/png,image/jpeg,image/webp,image/avif,image/gif';
 
-export function ImageInput({ value, onChange }: { value: ImageValue; onChange: (v: ImageValue) => void }) {
+export function ImageInput({ value, onChange, svg = false }: { value: ImageValue; onChange: (v: ImageValue) => void; svg?: boolean }) {
     const { progress, error, run } = useUploader();
     const url = assetUrl(value?.asset?._ref);
 
     const upload = async (file: File) => {
-        const asset = await run((p) => uploadAsset(file, 'image', p));
+        const asset = await run((p) => uploadAsset(file, 'image', p, { svg }));
         if (asset) onChange({ ...(value?._key ? { _key: value._key } : {}), _type: 'image', asset: { _type: 'reference', _ref: asset.ref } });
     };
 
@@ -82,7 +82,7 @@ export function ImageInput({ value, onChange }: { value: ImageValue; onChange: (
                     )}
                 </div>
                 <div className="flex flex-wrap gap-2">
-                    <PickButton accept={IMAGE_ACCEPT} onFile={upload} busy={progress !== null}>
+                    <PickButton accept={svg ? `${IMAGE_ACCEPT},image/svg+xml` : IMAGE_ACCEPT} onFile={upload} busy={progress !== null}>
                         <Upload className="h-4 w-4" /> {url ? 'Replace' : 'Upload'}
                     </PickButton>
                     {url && (

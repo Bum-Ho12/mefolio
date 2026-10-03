@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { CLOUDINARY_ID, resolveVideo } from '@/utils/video';
 import { MEDIA_BLOCKS } from './blocks';
-import { DOC_ID, FILE_REF, IMAGE_REF, KEY, type DocTypeDef, type Field } from './fields';
+import { DOC_ID, FILE_REF, IMAGE_REF, KEY, SVG_IMAGE_REF, type DocTypeDef, type Field } from './fields';
 
 export type Mode = 'draft' | 'publish';
 
@@ -24,12 +24,16 @@ const ref = z.string().regex(DOC_ID, 'Invalid reference');
 
 const hotspotish = z.record(z.string(), z.union([z.number(), z.string()])).optional();
 
-const image = z.strictObject({
+const imageRef = z.string().regex(IMAGE_REF, 'Invalid image asset');
+const imageOrSvgRef = z.string().refine((r) => IMAGE_REF.test(r) || SVG_IMAGE_REF.test(r), 'Invalid image asset');
+
+const imageSchema = (svg = false) => z.strictObject({
     _type: z.literal('image'),
-    asset: z.strictObject({ _type: z.literal('reference'), _ref: z.string().regex(IMAGE_REF, 'Invalid image asset') }),
+    asset: z.strictObject({ _type: z.literal('reference'), _ref: svg ? imageOrSvgRef : imageRef }),
     crop: hotspotish,
     hotspot: hotspotish,
 });
+const image = imageSchema();
 
 const file = z.strictObject({
     _type: z.literal('file'),
@@ -128,7 +132,7 @@ function fieldSchema(field: Field, mode: Mode): z.ZodType {
         case 'color':
             return z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Use #RRGGBB');
         case 'image':
-            return image;
+            return imageSchema(field.svg);
         case 'file':
             return file;
         case 'images':

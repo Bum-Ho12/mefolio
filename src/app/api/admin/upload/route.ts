@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getOwner } from '@/lib/auth/dal';
 import { writeClient } from '@/lib/sanity/write';
-import { sniff } from '@/lib/content/sniff';
+import { sniff, sniffSvg } from '@/lib/content/sniff';
 
 // Vercel rejects request bodies over ~4.5 MB before they reach the function; the
 // editor downsizes large photos in the browser to stay under this.
@@ -33,8 +33,15 @@ export async function POST(request: NextRequest) {
     if (upload.size > MAX_BYTES) return bad('File too large (max 4 MB)', 413);
 
     const buffer = Buffer.from(await upload.arrayBuffer());
-    const type = sniff(buffer);
-    if (!type) return bad('Unsupported file type. Images: PNG, JPEG, WebP, AVIF, GIF. Files: PDF.');
+    // SVG is only offered by fields that opt in (skill icons); validation on save still
+    // rejects an SVG reference anywhere else.
+    const allowSvg = expected === 'image' && form.get('svg') === '1';
+    const type = sniff(buffer) ?? (allowSvg ? sniffSvg(buffer) : null);
+    if (!type) {
+        return bad(allowSvg
+            ? 'Unsupported file type. Use PNG, JPEG, WebP, AVIF, GIF, or an SVG without scripts or event handlers.'
+            : 'Unsupported file type. Images: PNG, JPEG, WebP, AVIF, GIF. Files: PDF.');
+    }
     if (type.kind !== expected) return bad(expected === 'image' ? 'Not an image' : 'Only PDF files are accepted');
 
     try {
