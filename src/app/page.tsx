@@ -65,7 +65,7 @@ export default function HomeContent() {
       let completedSteps = 0;
       const updateProgress = () => {
         completedSteps++;
-        setLoadingProgress((completedSteps / keys.length) * 100);
+        setLoadingProgress(Math.round((completedSteps / keys.length) * 100));
       };
 
       // Each section loads independently: one failed request must not block the page.
