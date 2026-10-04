@@ -66,7 +66,7 @@ function render({ type, doc, lookup }: PreviewState): ReactNode {
         case 'career':
             return homeSection('career', <CareerSection career={A.toCareer(doc)} />);
         case 'skills':
-            return homeSection('skills', <SkillsSection skills={A.toSkills(doc)} />);
+            return homeSection('skills', <SkillsSection skills={A.toSkills(doc, lookup)} />);
         case 'projects':
             return homeSection('projects', <ProjectSection projects={A.toProjects(doc, lookup)} />);
         case 'project':

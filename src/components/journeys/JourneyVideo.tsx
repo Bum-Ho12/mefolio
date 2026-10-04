@@ -1,9 +1,10 @@
 'use client';
 
-import { useRef, useSyncExternalStore } from 'react';
+import { useRef } from 'react';
 import { useInView, useReducedMotion } from 'framer-motion';
 import LoopVideo from '@/components/LoopVideo';
 import { resolveVideo, type VideoInput } from '@/utils/video';
+import { MOBILE_QUERY, useMediaQuery } from '@/utils/hooks';
 
 const ASPECTS: Record<string, string> = {
     '16:9': 'aspect-video',
@@ -11,14 +12,6 @@ const ASPECTS: Record<string, string> = {
     '1:1': 'aspect-square',
     '4:5': 'aspect-[4/5]',
 };
-
-const MOBILE_QUERY = '(max-width: 767px)';
-
-function subscribeMobile(callback: () => void) {
-    const mql = window.matchMedia(MOBILE_QUERY);
-    mql.addEventListener('change', callback);
-    return () => mql.removeEventListener('change', callback);
-}
 
 interface JourneyVideoProps {
     video: VideoInput;
@@ -39,7 +32,7 @@ export default function JourneyVideo({ video, playback, aspect, large = false, t
     // Once it has been near the viewport the clip stays loaded, so scrolling back is instant.
     const seen = useInView(ref, { once: true, margin: '300px 0px' });
     const reduceMotion = useReducedMotion();
-    const isMobile = useSyncExternalStore(subscribeMobile, () => window.matchMedia(MOBILE_QUERY).matches, () => false);
+    const isMobile = useMediaQuery(MOBILE_QUERY);
 
     const player = playback === 'player';
     const source = resolveVideo(video, isMobile ? 640 : large ? 1600 : 960, { player });

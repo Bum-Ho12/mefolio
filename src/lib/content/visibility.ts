@@ -14,9 +14,9 @@ export function hiddenOnSite(type: string, doc: Doc, lookup: A.Lookup): string |
         case 'career':
             return hidden(hasContent.career(A.toCareer(doc)), 'at least one education, work or certification entry');
         case 'skills':
-            return hidden(hasContent.skills(A.toSkills(doc)), 'at least one skill');
+            return hidden(hasContent.skills(A.toSkills(doc, lookup)), 'at least one skill');
         case 'projects':
-            return hidden(hasContent.projects(A.toProjects(doc, lookup)), 'at least one published project');
+            return hidden(hasContent.projects(A.toProjects(doc, lookup)), 'at least one featured, published project');
         case 'resume':
             return hidden(hasContent.resume(A.toResume(doc)), 'a PDF or a download link');
         case 'journeys':

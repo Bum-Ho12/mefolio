@@ -46,44 +46,47 @@ export async function getCareer(): Promise<Career> {
     return data ?? { education: [], workExperience: [], certifications: [] };
 }
 
+// One project's fields, shared by the Projects section and the skills showcase.
+const PROJECT_FIELDS = `
+    "id": _id,
+    name,
+    description,
+    "image": image.asset->{
+        "url": url
+    },
+    projectUrl,
+    githubUrl
+`;
+// A project link with a switch wraps its reference ({ project, featured }); older links
+// are the plain reference itself. This resolves either to the project document.
+const LINKED_PROJECT = 'coalesce(project, @)->';
+
 export async function getProjects(): Promise<Projects> {
+    // Only published projects resolve. A link without a stored switch counts as featured.
     const query = `*[_type == "projects"][0] {
         title,
         description,
-        "projects": coalesce(projects[defined(@->_id)]-> {
-        name,
-        description,
-        "image": image.asset->{
-            "url": url
-        },
-        projectUrl,
-        githubUrl
-        }, [])
+        "projects": coalesce(projects[defined(${LINKED_PROJECT}_id) && featured != false]{...${LINKED_PROJECT}{${PROJECT_FIELDS}}}, [])
     }`;
     const data = await sanityClient.fetch<Projects | null>(query);
     return data ?? { title: '', description: '', projects: [] };
 }
 
 export async function getSkills(): Promise<Skills> {
-    const query = `*[_type == "skills"][0] {
-        "languages": coalesce(languages[] {
+    const skill = `
         name,
         "icon": icon.asset->{
             "url": url
-        }
-        }, []),
-        "frameworks": coalesce(frameworks[] {
-        name,
-        "icon": icon.asset->{
-            "url": url
-        }
-        }, []),
-        "tools": coalesce(tools[] {
-        name,
-        "icon": icon.asset->{
-            "url": url
-        }
+        },
+        "projects": coalesce(projects[defined(${LINKED_PROJECT}_id)]{
+            "featured": featured == true,
+            ...${LINKED_PROJECT}{${PROJECT_FIELDS}}
         }, [])
+    `;
+    const query = `*[_type == "skills"][0] {
+        "languages": coalesce(languages[] {${skill}}, []),
+        "frameworks": coalesce(frameworks[] {${skill}, summary}, []),
+        "tools": coalesce(tools[] {${skill}}, [])
     }`;
     const data = await sanityClient.fetch<Skills | null>(query);
     return data ?? { languages: [], frameworks: [], tools: [] };

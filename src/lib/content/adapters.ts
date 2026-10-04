@@ -1,4 +1,5 @@
 import { assetUrl } from '@/lib/sanity/config';
+import { linkRef } from './fields';
 import { HOME_JOURNEYS } from '@/utils/sections';
 import type {
     AboutData, Career, ContactData, Intro, Journey, JourneysPageData, JourneysSectionData, JourneySummary, PrivacyPolicyData, Project,
@@ -36,21 +37,10 @@ export const toCareer = (d: Doc): Career => ({
     certifications: arr(d.certifications).map((c) => ({ name: str(c.name), institution: str(c.institution), year: str(c.year) })),
 });
 
-const skillList = (v: unknown) =>
-    arr(v).map((s) => {
-        const url = imageUrl(s.icon);
-        return { name: str(s.name), icon: url ? { url } : undefined };
-    });
-
-export const toSkills = (d: Doc): Skills => ({
-    languages: skillList(d.languages),
-    frameworks: skillList(d.frameworks),
-    tools: skillList(d.tools),
-});
-
 export const toProject = (d: Doc): Project => {
     const url = imageUrl(d.image);
     return {
+        id: str(d._id) || undefined,
         name: str(d.name),
         description: str(d.description),
         image: url ? { url } : undefined,
@@ -59,10 +49,35 @@ export const toProject = (d: Doc): Project => {
     };
 };
 
+// Like the GROQ projections, links to projects that are missing from the lookup are dropped.
+const projectLinks = (v: unknown, lookup: Lookup) =>
+    arr(v).flatMap((link) => {
+        const doc = lookup[linkRef(link, 'project') ?? ''];
+        return doc ? [{ link, project: toProject(doc) }] : [];
+    });
+
+const skillList = (v: unknown, lookup: Lookup) =>
+    arr(v).map((s) => {
+        const url = imageUrl(s.icon);
+        return {
+            name: str(s.name),
+            icon: url ? { url } : undefined,
+            projects: projectLinks(s.projects, lookup).map(({ link, project }) => ({ ...project, featured: link.featured === true })),
+            summary: str(s.summary) || undefined,
+        };
+    });
+
+export const toSkills = (d: Doc, lookup: Lookup): Skills => ({
+    languages: skillList(d.languages, lookup),
+    frameworks: skillList(d.frameworks, lookup),
+    tools: skillList(d.tools, lookup),
+});
+
 export const toProjects = (d: Doc, lookup: Lookup): Projects => ({
     title: str(d.title),
     description: str(d.description),
-    projects: arr(d.projects).map((r) => deref(r, lookup)).filter(Boolean).map(toProject),
+    // A link without a stored switch counts as featured.
+    projects: projectLinks(d.projects, lookup).filter(({ link }) => link.featured !== false).map(({ project }) => project),
 });
 
 export const toResume = (d: Doc): Resume => {
