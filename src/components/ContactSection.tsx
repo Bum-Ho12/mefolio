@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { MdOutlineMail } from "react-icons/md";
-import { IoLogoLinkedin, IoCall } from "react-icons/io5";
+import { IoLogoLinkedin } from "react-icons/io5";
 import { Intro as IntroType } from "@/utils/types";
 
 export default function ContactSection({ intro }: { intro: IntroType }) {
@@ -11,7 +11,6 @@ export default function ContactSection({ intro }: { intro: IntroType }) {
     // Extract social links
     const emailLink = intro.socialLinks.find(link => link.platform.toLowerCase() === 'email')?.url;
     const linkedinLink = intro.socialLinks.find(link => link.platform.toLowerCase() === 'linkedin')?.url;
-    const phoneLink = intro.socialLinks.find(link => link.platform.toLowerCase() === 'phone')?.url;
 
     return (
         <section className="flex flex-col h-screen bg-black w-full items-center justify-around overflow-y-auto max-h-screen scrollbar-hide pt-24 px-4 pb-10 gap-4">
@@ -23,9 +22,9 @@ export default function ContactSection({ intro }: { intro: IntroType }) {
                 Reach out to me for any inquiries, collaborations, or just to say hi!
             </motion.p>
 
-            <motion.p initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4, duration: 0.5 }} className="text-lg font-thin italic text-center lg:w-1/2">
+            {/* <motion.p initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4, duration: 0.5 }} className="text-lg font-thin italic text-center lg:w-1/2">
                 My contact information is below.
-            </motion.p>
+            </motion.p> */}
 
             <div className="flex gap-4 justify-center items-center">
                 {emailLink && (
@@ -36,11 +35,6 @@ export default function ContactSection({ intro }: { intro: IntroType }) {
                 {linkedinLink && (
                     <a href={linkedinLink} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-full shadow-lg text-black hover:bg-gray-100">
                         <IoLogoLinkedin size={20} />
-                    </a>
-                )}
-                {phoneLink && (
-                    <a href={phoneLink} className="p-2 bg-white rounded-full shadow-lg text-black hover:bg-gray-100">
-                        <IoCall size={20} />
                     </a>
                 )}
             </div>

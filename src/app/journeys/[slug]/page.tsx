@@ -13,9 +13,9 @@ const loadJourney = cache(async (slug: string) => (SLUG.test(slug) && slug.lengt
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
     const journey = await loadJourney((await params).slug);
-    if (!journey) return { title: 'Journey not found | Bum ho' };
+    if (!journey) return { title: 'Journey not found' };
     return {
-        title: `${journey.title} | Bum ho`,
+        title: `${journey.title}`,
         description: journey.excerpt,
         openGraph: {
             type: 'article',

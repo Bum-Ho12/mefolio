@@ -6,7 +6,7 @@ import { MdOutlineMail  } from "react-icons/md";
 import { IoLogoGithub, IoLogoLinkedin, IoCall } from "react-icons/io5";
 import { FaDev } from "react-icons/fa";
 import { Intro as IntroType } from '@/utils/types';
-import MeStorButton from './store/MeStorButton';
+// import MeStorButton from './store/MeStorButton';
 
 export default function Intro({ intro }: { intro: IntroType }) {
     // Find specific social links
@@ -26,7 +26,7 @@ export default function Intro({ intro }: { intro: IntroType }) {
                     transition={{ duration: 0.8 }}
                     className="text-6xl font-bold mb-4 text-white"
                 >
-                    {intro.greeting}
+                    My name is {intro.name}
                 </motion.h1>
                 <motion.h2
                     initial={{ opacity: 0, y: -50 }}
@@ -34,7 +34,7 @@ export default function Intro({ intro }: { intro: IntroType }) {
                     transition={{ delay: 0.4, duration: 0.8 }}
                     className="text-6xl font-semibold mb-2 text-white"
                 >
-                    My name is {intro.name}
+                    {intro.greeting}
                 </motion.h2>
                 <motion.p
                     initial={{ opacity: 0, y: -50 }}
@@ -52,7 +52,7 @@ export default function Intro({ intro }: { intro: IntroType }) {
                 >
                     {intro.location}
                 </motion.p>
-                <MeStorButton/>
+                {/* <MeStorButton/> */}
                 <div className="flex gap-4 justify-center w-full items-center mt-10">
                     {emailLink && (
                         <a
