@@ -49,7 +49,7 @@ export default function LegalPageView({ data, heading }: { data: LegalPageData |
             </div>
 
             {/* Footer */}
-            <MeStoreFooter setFilter={() => {}} getCategories={() => ['All']} />
+            <MeStoreFooter />
         </div>
     );
 }

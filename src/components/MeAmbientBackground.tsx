@@ -1,19 +1,16 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
+// The glow layers are fixed behind the page, so the content keeps its normal
+// document flow and stays fully scrollable however tall it gets.
 const MeAmbientBackground: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
     return (
-        <AnimatePresence>
-            <motion.div
-            className="absolute inset-0 w-full min-h-screen flex items-center justify-center bg-black"
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-            >
+        <div className="relative min-h-screen w-full overflow-x-hidden bg-black">
+            <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
                 {/* Ambient Background */}
                 <motion.div
-                    className="absolute inset-0 z-0 h-full"
+                    className="absolute inset-0"
                     initial={{ scale: 1.1, opacity: 0 }}
                     animate={{
                         scale: [1.1, 1],
@@ -30,7 +27,7 @@ const MeAmbientBackground: React.FC<{ children: React.ReactNode }> = ({ children
 
                 {/* Secondary Ambient Layer */}
                 <motion.div
-                    className="absolute inset-0 z-0"
+                    className="absolute inset-0"
                     initial={{ opacity: 0 }}
                     animate={{
                     opacity: [0, 0.4, 0],
@@ -44,9 +41,9 @@ const MeAmbientBackground: React.FC<{ children: React.ReactNode }> = ({ children
                     background: 'radial-gradient(circle at 70% 30%, rgba(147,197,253,0.4) 0%, transparent 60%)',
                     }}
                 />
-                { children }
-            </motion.div>
-        </AnimatePresence>
+            </div>
+            <div className="relative z-10">{ children }</div>
+        </div>
     );
 };
 

@@ -16,8 +16,7 @@ export default function StorePage() {
         // Fetch store items
         const fetchItems = async () => {
             try {
-                const data = await getStoreItems();
-                const store = await getStore();
+                const [data, store] = await Promise.all([getStoreItems(), getStore()]);
                 setStoreData(store);
                 setItems(data);
                 setIsLoading(false);

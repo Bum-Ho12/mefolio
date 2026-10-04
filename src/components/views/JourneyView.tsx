@@ -66,7 +66,7 @@ export default function JourneyView({ journey }: { journey: Journey }) {
                 </div>
             </article>
 
-            <MeStoreFooter setFilter={() => {}} getCategories={() => ['All']} />
+            <MeStoreFooter />
         </div>
     );
 }

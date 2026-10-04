@@ -208,8 +208,5 @@ export const toJourneysSection = (d: Doc, lookup: Lookup): JourneysSectionData =
 export const toJourneysPage = (d: Doc, lookup: Lookup): JourneysPageData => ({
     title: str(d.title) || 'Journeys',
     description: str(d.description) || undefined,
-    heroImage: imageUrl(d.heroImage),
-    heroTitle: str(d.heroTitle) || undefined,
-    heroSubtitle: str(d.heroSubtitle) || undefined,
     journeys: journeysIn(lookup),
 });

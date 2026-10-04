@@ -239,8 +239,5 @@ export interface JourneysSectionData {
 export interface JourneysPageData {
     title: string;
     description?: string;
-    heroImage?: string;
-    heroTitle?: string;
-    heroSubtitle?: string;
     journeys: JourneySummary[];
 }

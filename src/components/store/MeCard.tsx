@@ -100,27 +100,29 @@ const StoreMeCard = ({ item }: { item: StoreItem }) => {
         >
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg border border-white/10 rounded-3xl" />
 
-            <div className="relative p-6 h-full flex flex-col">
+            <div className="relative p-4 sm:p-6 h-full flex flex-col">
                 <Link href={`/store/${item.id.current}`} className="block">
-                    <div className="relative w-full h-40 mb-4">
+                    <div className="relative w-full aspect-video mb-4">
                         <Image
                             src={item.mainImage ? item.mainImage : '/empty_img.png'}
                             alt={item.name}
                             fill
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                             className="object-cover rounded-xl"
                         />
                     </div>
                 </Link>
                 <div className="flex-1">
-                        <div className="flex justify-between items-center mb-2">
-                            <Link href={`/store/${item.id.current}`} className="hover:text-blue-300 transition-colors">
-                                <h3 className="text-xl font-semibold text-white">{item.name}</h3>
-                            </Link>
-                            <span className="text-blue-400 font-bold">
-                                {item.price > 0 ? `$${item.price.toFixed(2)}` : 'Free'}
-                            </span>
-                        </div>
-                        <p className="text-gray-300 text-sm mb-2">{item.description.length > 100 ? `${item.description.substring(0, 100)}...` : item.description}</p><span className="text-xs px-2 py-1 rounded-full bg-white/10 mb-2 inline-block capitalize">
+                    <div className="flex justify-between items-start gap-3 mb-2">
+                        <Link href={`/store/${item.id.current}`} className="min-w-0 hover:text-blue-300 transition-colors">
+                            <h3 className="text-lg sm:text-xl font-semibold text-white line-clamp-2 break-words">{item.name}</h3>
+                        </Link>
+                        <span className="shrink-0 text-blue-400 font-bold">
+                            {item.price > 0 ? `$${item.price.toFixed(2)}` : 'Free'}
+                        </span>
+                    </div>
+                    <p className="text-gray-300 text-sm mb-3 line-clamp-3">{item.description}</p>
+                    <span className="text-xs px-2 py-1 rounded-full bg-white/10 mb-2 inline-block capitalize">
                         {item.category}
                     </span>
                     {renderCategorySpecificElements()}
