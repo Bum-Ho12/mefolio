@@ -8,7 +8,7 @@ import type { JourneysPageData } from '@/utils/types';
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-    title: 'Journeys | Bum ho',
+    title: 'Journeys',
     description: 'Stories from along the way.',
 };
 

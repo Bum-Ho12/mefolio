@@ -38,15 +38,50 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## Environment variables
 
-Create `.env.local` in the project root:
+Copy `.env.example` to `.env.local` in the project root (`cp .env.example .env.local`). The public site needs:
 
 ```
 NEXT_PUBLIC_SANITY_PROJECT_ID=
 NEXT_PUBLIC_SANITY_DATASET=production
 NEXT_PUBLIC_SANITY_API_VERSION=2025-01-07
+NEXT_PUBLIC_SITE_URL=           # e.g. https://bum-ho.vercel.app, no trailing slash
 ```
 
 The public site needs no Sanity token: the dataset is public and the read client never sends one.
+
+`NEXT_PUBLIC_SITE_URL` is the canonical origin used for absolute URLs in metadata, `robots.txt`, `sitemap.xml`
+and share images (`src/lib/site.ts`). If it is unset, Vercel builds fall back to the project's production domain
+(`VERCEL_PROJECT_PRODUCTION_URL`) and local builds to `http://localhost:3000`. Set it explicitly in every Vercel
+environment you index, and when you fork this project, or crawlers and link previews will point at the wrong site.
+
+## SEO and metadata
+
+These files are Next.js [metadata conventions](https://nextjs.org/docs/app/api-reference/file-conventions/metadata).
+The file names are exact: a typo (e.g. `robot.ts`) is silently ignored and the route returns 404.
+
+| File | Serves | Notes |
+| --- | --- | --- |
+| `src/app/layout.tsx` | `<head>` defaults | `metadataBase`, site description and the title template `%s \| Bumho Nisubire`. |
+| `src/app/robots.ts` | `/robots.txt` | Allows everything except `/admin` and `/api`, and links the sitemap. |
+| `src/app/sitemap.ts` | `/sitemap.xml` | Static routes plus every journey from Sanity. Regenerated at most hourly (`revalidate`). |
+| `src/app/opengraph-image.tsx` | Share image (1200×630 PNG) | Generated at build time with `next/og`; used by every route that doesn't set its own. |
+
+- **Page titles:** set only the page's own name (`title: 'Journeys'`). The layout template appends
+  ` | Bumho Nisubire`, so adding it yourself shows it twice.
+- **Dynamic pages** use `generateMetadata` (see `src/app/journeys/[slug]/page.tsx`, which also uses the journey
+  cover as its share image instead of the default one).
+- **New public page:** add its path to `STATIC_ROUTES` in `src/app/sitemap.ts`. Keep route folder names to
+  URL-safe characters: Next percent-encodes the sitemap, so `/terms&conditions` would be listed as
+  `/terms%26conditions`, which 404s. That page is left out of the sitemap until the route is renamed.
+  Store item pages (`/store/<id>`) are intentionally left out.
+- **New private area:** add it to `disallow` in `robots.ts`. Admin pages are also sent with an
+  `X-Robots-Tag: noindex` header from `src/proxy.ts`, so they stay out of search results even if linked.
+- **Changing the share image:** edit `src/app/opengraph-image.tsx`. To use a designed image instead, delete it and
+  drop an `opengraph-image.png` (max 8 MB) in `src/app/`.
+
+**Check it locally:** run `pnpm build && pnpm start`, then open `/robots.txt`, `/sitemap.xml` and
+`/opengraph-image`. After deploying, paste the URL into a link-preview tool (e.g. opengraph.xyz) to confirm the
+title, description and image.
 
 ## Content admin (`/admin`)
 
