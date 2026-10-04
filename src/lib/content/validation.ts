@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { CLOUDINARY_ID, resolveVideo } from '@/utils/video';
 import { MEDIA_BLOCKS } from './blocks';
-import { DOC_ID, FILE_REF, IMAGE_REF, KEY, SVG_IMAGE_REF, type DocTypeDef, type Field } from './fields';
+import { DOC_ID, FILE_REF, IMAGE_REF, KEY, SVG_IMAGE_REF, linkType, type DocTypeDef, type Field } from './fields';
 
 export type Mode = 'draft' | 'publish';
 
@@ -139,8 +139,18 @@ function fieldSchema(field: Field, mode: Mode): z.ZodType {
             return z.array(image.extend({ _key: key })).max(50);
         case 'reference':
             return reference;
-        case 'references':
-            return z.array(reference.extend({ _key: key })).max(MAX_ARRAY);
+        case 'references': {
+            const plain = reference.extend({ _key: key });
+            if (!field.flag) return z.array(plain).max(MAX_ARRAY);
+            // Switchable links wrap the reference; older plain links are still accepted.
+            const link = z.strictObject({
+                _key: key,
+                _type: z.literal(linkType(field.to)),
+                [field.to]: reference,
+                [field.flag.name]: z.boolean().optional(),
+            });
+            return z.array(z.union([link, plain])).max(MAX_ARRAY);
+        }
         case 'objects':
             return z.array(objectSchema(field.of, mode, { _key: key })).max(MAX_ARRAY);
         case 'blocks':

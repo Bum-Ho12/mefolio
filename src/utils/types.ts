@@ -40,6 +40,8 @@ export interface Career {
 }
 
 export interface Project {
+    // The document id; skills link to projects by it.
+    id?: string;
     name: string;
     description: string;
     image?: {
@@ -47,6 +49,12 @@ export interface Project {
     };
     projectUrl?: string;
     githubUrl?: string;
+}
+
+// A project as linked from a skill. `featured` is set per link; on a framework's links
+// it gives the project a slide under that framework in the skills showcase.
+export interface LinkedProject extends Project {
+    featured: boolean;
 }
 
 export interface Projects {
@@ -60,6 +68,10 @@ export interface Skill {
     icon?: {
         url: string;
     };
+    // Projects this skill was used in (published ones only).
+    projects?: LinkedProject[];
+    // Frameworks only: a line shown in the showcase.
+    summary?: string;
 }
 
 export interface Skills {

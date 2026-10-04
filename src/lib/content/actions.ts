@@ -4,7 +4,7 @@ import 'server-only';
 import { revalidatePath } from 'next/cache';
 import { requireOwner, UnauthorizedError } from '@/lib/auth/dal';
 import { writeClient } from '@/lib/sanity/write';
-import { DOC_ID, type DocTypeDef, type Field } from './fields';
+import { DOC_ID, linkRef, type DocTypeDef, type Field } from './fields';
 import { getDocType } from './registry';
 import { validateDocument, type FieldError } from './validation';
 import { draftId, getDocumentPair, listReferenceOptions, pickFields, resolveSingletonId, stripSystem, type SanityDoc } from './store';
@@ -61,7 +61,7 @@ function collectRefs(fields: Field[], data: Record<string, unknown>, out: Map<st
             if (r) (out.get(to) ?? out.set(to, new Set()).get(to)!).add(r);
         };
         if (field.kind === 'reference') add(field.to, value);
-        if (field.kind === 'references') for (const item of value as unknown[]) add(field.to, item);
+        if (field.kind === 'references') for (const item of value as unknown[]) add(field.to, { _ref: linkRef(item, field.to) });
         if (field.kind === 'objects') for (const item of value as Record<string, unknown>[]) collectRefs(field.of, item, out);
     }
     return out;

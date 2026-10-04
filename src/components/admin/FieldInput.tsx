@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, Copy, ExternalLink, Plus, Trash2, X } from 'lucide-react';
-import { newKey, type Field } from '@/lib/content/fields';
+import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, Copy, ExternalLink, Plus, Star, Trash2, X } from 'lucide-react';
+import { linkRef, linkType, newKey, type Field } from '@/lib/content/fields';
 import BlocksInput from './BlocksInput';
 import { FileInput, ImageInput, ImagesInput, VideoSourceInput } from './MediaInputs';
 import { useEditorContext } from './EditorContext';
@@ -183,7 +183,7 @@ function Control({ field, value, onChange, path, siblings, patch }: FieldProps) 
             );
         }
         case 'references':
-            return <ReferencesInput to={field.to} value={value} onChange={onChange} />;
+            return <ReferencesInput to={field.to} flag={field.flag} value={value} onChange={onChange} />;
         case 'objects':
             return <ObjectsInput field={field} value={value} onChange={onChange} path={path} />;
     }
@@ -251,24 +251,42 @@ function ItemControls({ index, count, onMove, onRemove, onDuplicate }: { index: 
     );
 }
 
-function ReferencesInput({ to, value, onChange }: { to: string; value: any[] | undefined; onChange: (v: any[]) => void }) {
+function ReferencesInput({ to, flag, value, onChange }: { to: string; flag?: Extract<Field, { kind: 'references' }>['flag']; value: any[] | undefined; onChange: (v: any[]) => void }) {
     const { refOptions } = useEditorContext();
     const items = value ?? [];
     const options = refOptions[to] ?? [];
     const byId = new Map(options.map((o) => [o.id, o]));
-    const available = options.filter((o) => !items.some((i) => i._ref === o.id));
+    const available = options.filter((o) => !items.some((i) => linkRef(i, to) === o.id));
+    // With a switch, links wrap their reference (see linkRef); a plain one is converted when toggled.
+    const makeLink = (key: string, id: string, on?: boolean) =>
+        flag ? { _key: key, _type: linkType(to), [to]: { _type: 'reference', _ref: id }, [flag.name]: on ?? flag.default } : { _key: key, _type: 'reference', _ref: id };
 
     return (
         <div className="space-y-2">
             {items.map((item, index) => {
-                const option = byId.get(item._ref);
+                const id = linkRef(item, to) ?? '';
+                const option = byId.get(id);
                 return (
                     <div key={item._key} className="flex items-center gap-2 rounded-md border border-white/10 bg-white/[0.03] px-3 py-2">
                         <span className="w-6 text-xs text-white/30">{index + 1}</span>
-                        <Link href={`/admin/${to}/${item._ref}`} className="min-w-0 flex-1 truncate text-sm hover:text-blue-300">
+                        <Link href={`/admin/${to}/${id}`} className="min-w-0 flex-1 truncate text-sm hover:text-blue-300">
                             {option?.title ?? <span className="text-amber-300">Missing or unpublished document</span>}
                             {option?.subtitle && <span className="ml-2 text-white/40">{option.subtitle}</span>}
                         </Link>
+                        {flag && (() => {
+                            const on = item[flag.name] ?? flag.default;
+                            return (
+                                <button
+                                    type="button"
+                                    aria-pressed={on}
+                                    title={flag.title}
+                                    onClick={() => onChange(items.map((it, i) => (i === index ? makeLink(it._key, id, !on) : it)))}
+                                    className={`flex flex-shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-colors ${on ? 'border-amber-300/50 bg-amber-300/10 text-amber-200' : 'border-white/10 text-white/40 hover:text-white/70'}`}
+                                >
+                                    <Star className={`h-3.5 w-3.5 ${on ? 'fill-current' : ''}`} /> {flag.title}
+                                </button>
+                            );
+                        })()}
                         <ItemControls
                             index={index}
                             count={items.length}
@@ -281,7 +299,7 @@ function ReferencesInput({ to, value, onChange }: { to: string; value: any[] | u
             <select
                 className={`${inputClass} max-w-sm`}
                 value=""
-                onChange={(e) => e.target.value && onChange([...items, { _key: newKey(), _type: 'reference', _ref: e.target.value }])}
+                onChange={(e) => e.target.value && onChange([...items, makeLink(newKey(), e.target.value)])}
                 disabled={!available.length}
             >
                 <option value="">{available.length ? '+ Add existing…' : 'No more published documents to add'}</option>

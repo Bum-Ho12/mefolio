@@ -1,20 +1,46 @@
 "use client";
-import { Skills } from "@/utils/types";
-import React, { useState, useEffect, useRef } from "react";
+import { Skill, Skills } from "@/utils/types";
+import React, { useState, useEffect, useRef, useMemo, useCallback, useContext } from "react";
 import { TagCloudCanvas, Tag } from "react-3d-tag-sphere";
-import { ChevronDown } from "lucide-react";
+import { useInView } from "framer-motion";
+import { buildShowcase } from "@/utils/sections";
+import { LARGE_QUERY, useMediaQuery, usePageVisible } from "@/utils/hooks";
+import { ScrollContainerContext } from "./ScrollContainerContext";
+import SkillMarquee, { SkillRow } from "./skills/SkillMarquee";
+import FrameworkShowcase from "./skills/FrameworkShowcase";
 
 interface SkillsSectionProps {
     skills: Skills;
 }
 
+// Vertical padding of the section (py-24) and the gap between the sphere and the rows.
+const SECTION_PADDING = 192;
+const ROWS_GAP = 16;
+const SPHERE_MAX = 520;
+const SPHERE_MIN = 260;
+
 const SkillsSection: React.FC<SkillsSectionProps> = ({ skills }) => {
-    const [mounted, setMounted] = useState(false);
+    // The sphere animates a canvas and loads every icon, so phones never mount it.
+    const isLarge = useMediaQuery(LARGE_QUERY);
     const [dimensions, setDimensions] = useState({ width: 512, height: 400 });
     const containerRef = useRef<HTMLDivElement>(null);
-    const [showScrollIndicator, setShowScrollIndicator] = useState(false);
+    const rowsRef = useRef<HTMLDivElement>(null);
+    const sectionRef = useRef<HTMLDivElement>(null);
+    const fallbackRef = useRef<HTMLDivElement>(null);
+    const scrollerRef = useContext(ScrollContainerContext) ?? fallbackRef;
+    const inView = useInView(sectionRef, { root: scrollerRef, amount: 0.5 });
+    const seen = useInView(sectionRef, { root: scrollerRef, amount: 0.5, once: true });
+    const pageVisible = usePageVisible();
 
-    const tags: Tag[] = React.useMemo(() => {
+    const rows: SkillRow[] = useMemo(() => (
+        [
+            { label: "Languages", skills: skills.languages },
+            { label: "Frameworks", skills: skills.frameworks },
+            { label: "Tools", skills: skills.tools },
+        ].filter((row) => row.skills.length > 0)
+    ), [skills]);
+
+    const tags: Tag[] = useMemo(() => {
         const allSkills = [
             ...skills.languages,
             ...skills.frameworks,
@@ -22,7 +48,7 @@ const SkillsSection: React.FC<SkillsSectionProps> = ({ skills }) => {
         ];
 
         return allSkills
-            .filter(skill => skill.icon && skill.icon && skill.icon.url)
+            .filter(skill => skill.icon && skill.icon.url)
             .map((skill, index) => ({
                 src: skill.icon?.url || "",
                 size: 40,
@@ -31,13 +57,29 @@ const SkillsSection: React.FC<SkillsSectionProps> = ({ skills }) => {
             }));
     }, [skills]);
 
+    const slides = useMemo(() => buildShowcase(skills), [skills]);
+    const [slideIndex, setSlideIndex] = useState(0);
+    // Edits in the admin preview can remove slides.
+    const current = slideIndex < slides.length ? slideIndex : 0;
+    const slide = slides[current];
+    const highlighted = useMemo(
+        () => new Set<Skill>(slide ? [...slide.stack.languages, ...slide.stack.frameworks, ...slide.stack.tools] : []),
+        [slide],
+    );
+    const selectable = useMemo(() => new Set(slides.map((s) => s.framework)), [slides]);
+    const selectFramework = useCallback((skill: Skill) => {
+        const first = slides.findIndex((s) => s.framework === skill);
+        if (first !== -1) setSlideIndex(first);
+    }, [slides]);
+
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setMounted(true);
+        if (!isLarge) return;
         const updateDimensions = () => {
             if (containerRef.current) {
                 const width = Math.min(containerRef.current.offsetWidth, 800);
-                const height = Math.min(window.innerHeight, 600);
+                // The rows sit under the sphere, inside the same screen.
+                const rowsHeight = (rowsRef.current?.offsetHeight ?? 0) + ROWS_GAP;
+                const height = Math.max(SPHERE_MIN, Math.min(window.innerHeight - SECTION_PADDING - rowsHeight, SPHERE_MAX));
                 setDimensions({ width, height });
             }
         };
@@ -45,91 +87,54 @@ const SkillsSection: React.FC<SkillsSectionProps> = ({ skills }) => {
         updateDimensions();
         window.addEventListener("resize", updateDimensions);
         return () => window.removeEventListener("resize", updateDimensions);
-    }, []);
+    }, [isLarge, rows.length]);
 
-    // Handle scroll indicator visibility
-    const handleTableScroll = (e: React.UIEvent<HTMLDivElement>) => {
-        const target = e.target as HTMLDivElement;
-        const isAtBottom = target.scrollHeight - target.scrollTop === target.clientHeight;
-        setShowScrollIndicator(!isAtBottom);
-    };
+    const hasShowcase = slides.length > 0;
 
     return (
-        <div className="h-full w-full items-center overflow-y-auto max-h-screen scrollbar-hide">
+        <div ref={sectionRef} className="h-full w-full items-center overflow-y-auto max-h-screen scrollbar-hide">
             <div className="max-w-7xl mx-auto px-4 lg:px-8">
-                <section className="flex flex-col lg:flex-row w-full gap-8 px-4 lg:px-8 py-24 h-full items-center">
-                    <div className="w-full flex flex-col lg:flex-row gap-8">
-                        <div
-                            ref={containerRef}
-                            className="w-full lg:w-2/3 flex items-center justify-center"
-                            style={{ height: mounted ? `${dimensions.height}px` : "400px" }}
-                        >
-                            {mounted && tags.length > 0 && (
-                                <TagCloudCanvas
-                                    tags={tags}
-                                    width={dimensions.width}
-                                    height={dimensions.height}
-                                />
-                            )}
-                        </div>
-
-                        <div className="w-full lg:w-1/3 relative rounded-3xl lg:h-[450px]">
-                            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg border border-white/10 rounded-3xl" />
-
-                            {/* Table Container with dynamic height matching TagCloudCanvas */}
-                            <div
-                                className="relative h-full  lg:h-[440px]"
-                                // style={{ height: mounted && dimensions.width>=1024 ? `400px`: mounted ? `${dimensions.height}px` : "400px" }}
-                            >
-                                {/* Scroll Container */}
+                <section className="flex w-full px-0 sm:px-4 lg:px-8 pt-20 pb-6 lg:py-24 h-full items-center">
+                    <div className="w-full flex flex-col lg:flex-row gap-6 lg:gap-8">
+                        <div className={`w-full ${hasShowcase ? "lg:w-2/3" : ""} flex flex-col gap-4 min-w-0`}>
+                            {isLarge && (
                                 <div
-                                    className="h-full overflow-y-auto scrollbar-hide "
-                                    onScroll={handleTableScroll}
+                                    ref={containerRef}
+                                    className="w-full flex items-center justify-center"
+                                    style={{ height: `${dimensions.height}px` }}
                                 >
-                                    <div className="pb-4">
-                                        <div className="grid grid-cols-3 gap-0">
-                                            <div>
-                                                <h3 className="text-lg font-semibold mb-4 sticky top-0 bg-white text-black p-2 rounded-ss-[1.3rem]">Languages</h3>
-                                                <div className="space-y-2 pl-2">
-                                                    {skills.languages.map((lang, idx) => (
-                                                        <div key={idx} className="p-2 hover:bg-white/5 rounded-lg transition-colors">
-                                                            {lang.name}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <h3 className="text-lg font-semibold mb-4 sticky top-0 bg-white text-black py-2 px-1">Frameworks</h3>
-                                                <div className="space-y-2">
-                                                    {skills.frameworks.map((framework, idx) => (
-                                                        <div key={idx} className="p-2 hover:bg-white/5 rounded-lg transition-colors">
-                                                            {framework.name}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <h3 className="text-lg font-semibold mb-4 sticky text-black top-0 bg-white rounded-se-3xl p-2">Tools</h3>
-                                                <div className="space-y-2 pr-2">
-                                                    {skills.tools.map((tool, idx) => (
-                                                        <div key={idx} className="p-2 hover:bg-white/5 rounded-lg transition-colors">
-                                                            {tool.name}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    {tags.length > 0 && (
+                                        <TagCloudCanvas
+                                            tags={tags}
+                                            width={dimensions.width}
+                                            height={dimensions.height}
+                                        />
+                                    )}
                                 </div>
-
-                                {/* Scroll Indicator */}
-                                {showScrollIndicator && (
-                                    <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-white/50 animate-bounce hidden lg:block">
-                                        <ChevronDown size={20} />
-                                    </div>
-                                )}
-                            </div>
+                            )}
+                            <SkillMarquee
+                                ref={rowsRef}
+                                rows={rows}
+                                highlighted={highlighted}
+                                selectable={selectable}
+                                onSelect={selectFramework}
+                                paused={!inView || !pageVisible}
+                            />
                         </div>
+
+                        {hasShowcase && (
+                            // On large screens the card fills the column without adding height of its own.
+                            <div className="w-full lg:w-1/3 relative h-[30rem] lg:h-auto">
+                                <FrameworkShowcase
+                                    className="absolute inset-0"
+                                    slides={slides}
+                                    index={current}
+                                    onIndexChange={setSlideIndex}
+                                    visible={seen}
+                                    playing={inView && pageVisible}
+                                />
+                            </div>
+                        )}
                     </div>
                 </section>
             </div>

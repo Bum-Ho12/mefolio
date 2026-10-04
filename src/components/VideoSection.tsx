@@ -1,7 +1,7 @@
 // src/components/VideoSection.tsx
 'use client';
 
-import { useCallback, useContext, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import {
     motion,
     useInView,
@@ -14,6 +14,7 @@ import {
 import VideoCard from './VideoCard';
 import { ScrollContainerContext } from './ScrollContainerContext';
 import { Videos } from '@/utils/types';
+import { MOBILE_QUERY, useMediaQuery, usePageVisible } from '@/utils/hooks';
 
 interface VideoSectionProps {
     videos: Videos;
@@ -22,26 +23,9 @@ interface VideoSectionProps {
 // Must match the card width in VideoCard so the first/last card can sit centered.
 const CARD_WIDTH = 'min(72vw, 720px)';
 
-function subscribeVisibility(callback: () => void) {
-    document.addEventListener('visibilitychange', callback);
-    return () => document.removeEventListener('visibilitychange', callback);
-}
-
-const MOBILE_QUERY = '(max-width: 767px)';
-
-function subscribeMobile(callback: () => void) {
-    const mql = window.matchMedia(MOBILE_QUERY);
-    mql.addEventListener('change', callback);
-    return () => mql.removeEventListener('change', callback);
-}
-
-function usePageVisible() {
-    return useSyncExternalStore(subscribeVisibility, () => document.visibilityState === 'visible', () => true);
-}
-
 // Smaller renditions on phones; the card never renders wider than ~72vw there.
 function useVideoWidth() {
-    const isMobile = useSyncExternalStore(subscribeMobile, () => window.matchMedia(MOBILE_QUERY).matches, () => false);
+    const isMobile = useMediaQuery(MOBILE_QUERY);
     return isMobile ? 640 : 960;
 }
 

@@ -20,7 +20,10 @@ const socialLinks: Field = {
     ],
 };
 
-const skillList = (name: string, title: string): Field => ({
+// Linking a skill to the projects it was used in builds the skills showcase: a project
+// featured in a framework's list gets a slide under that framework, listing every skill
+// linked to the project.
+const skillList = (name: string, title: string, extra: Field[] = [], projects?: Partial<Extract<Field, { kind: 'references' }>>): Field => ({
     kind: 'objects',
     name,
     title,
@@ -28,6 +31,15 @@ const skillList = (name: string, title: string): Field => ({
     of: [
         { kind: 'string', name: 'name', title: 'Name', required: true },
         { kind: 'image', name: 'icon', title: 'Icon', svg: true },
+        ...extra,
+        {
+            kind: 'references',
+            name: 'projects',
+            title: 'Used in projects',
+            to: 'project',
+            description: 'Listed on the skills showcase slides of these projects.',
+            ...projects,
+        },
     ],
 });
 
@@ -88,8 +100,21 @@ export const DOC_TYPES: DocTypeDef[] = [
         title: 'Skills',
         group: 'Portfolio',
         singleton: true,
+        previewDeps: ['project'],
         paths: ['/'],
-        fields: [skillList('languages', 'Languages'), skillList('frameworks', 'Frameworks'), skillList('tools', 'Tools')],
+        fields: [
+            skillList('languages', 'Languages'),
+            skillList(
+                'frameworks',
+                'Frameworks',
+                [{ kind: 'text', name: 'summary', title: 'Showcase summary', rows: 2, max: 200, description: 'Optional line shown under the framework in the showcase.' }],
+                {
+                    description: 'Featured projects get a slide under this framework in the skills showcase, listing every skill linked to them.',
+                    flag: { name: 'featured', title: 'Featured', default: false },
+                },
+            ),
+            skillList('tools', 'Tools'),
+        ],
     },
     {
         type: 'projects',
@@ -102,7 +127,14 @@ export const DOC_TYPES: DocTypeDef[] = [
         fields: [
             { kind: 'string', name: 'title', title: 'Title' },
             { kind: 'text', name: 'description', title: 'Description', rows: 3 },
-            { kind: 'references', name: 'projects', title: 'Projects (in display order)', to: 'project' },
+            {
+                kind: 'references',
+                name: 'projects',
+                title: 'Projects (in display order)',
+                to: 'project',
+                description: 'Only featured projects appear on the site.',
+                flag: { name: 'featured', title: 'Featured', default: true },
+            },
         ],
     },
     {

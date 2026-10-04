@@ -28,7 +28,9 @@ export type Field =
     | (Base & { kind: 'file'; accept: 'pdf' })
     | (Base & { kind: 'images' })
     | (Base & { kind: 'reference'; to: string })
-    | (Base & { kind: 'references'; to: string })
+    // `flag` adds an on/off switch to each link (see linkRef below). `default` is what a
+    // link without a stored value means, and what new links get.
+    | (Base & { kind: 'references'; to: string; flag?: { name: string; title: string; default: boolean } })
     | (Base & { kind: 'objects'; of: Field[]; itemTitle: string; itemSubtitle?: string })
     // Portable Text. With `media`, image/video/gallery blocks (lib/content/blocks.ts) can
     // sit between the paragraphs.
@@ -57,6 +59,16 @@ export interface DocTypeDef {
     previewDeps?: string[];
     // Public paths to revalidate after publishing.
     paths?: string[];
+}
+
+// Sanity allows no extra keys on a reference, so a link with a switch is an object that
+// wraps it: { _type: 'projectLink', project: { _type: 'reference', _ref }, featured }.
+// Links saved before switches existed are plain references; both shapes are read.
+export const linkType = (to: string) => `${to}Link`;
+
+export function linkRef(item: unknown, to: string): string | undefined {
+    const link = item as { _ref?: string } & Record<string, { _ref?: string } | undefined> | undefined;
+    return link?.[to]?._ref ?? link?._ref;
 }
 
 export const IMAGE_REF = /^image-[a-f0-9]{20,64}-\d{1,5}x\d{1,5}-(png|jpe?g|webp|gif|avif)$/;
