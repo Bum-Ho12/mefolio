@@ -66,7 +66,7 @@ export default function AboutView({ data }: { data: AboutData | null }) {
             </div>
 
             {/* Footer */}
-            <MeStoreFooter setFilter={() => {}} getCategories={() => ['All']} />
+            <MeStoreFooter />
         </div>
     );
 }

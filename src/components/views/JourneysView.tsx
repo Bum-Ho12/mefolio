@@ -43,7 +43,7 @@ export default function JourneysView({ data }: { data: JourneysPageData }) {
                 </div>
             </div>
 
-            <MeStoreFooter setFilter={() => {}} getCategories={() => ['All']} />
+            <MeStoreFooter />
         </div>
     );
 }

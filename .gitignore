@@ -44,3 +44,8 @@ next-env.d.ts
 # store/
 deploy.ps1
 deploy.sh
+
+# Agents
+agents/
+CLAUDE.md
+AGENTS.md

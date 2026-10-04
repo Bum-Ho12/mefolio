@@ -2,14 +2,16 @@ import { getContactPage } from "@/services/api/sanity";
 import { ContactData } from "@/utils/types";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { StoreCategory } from "./categories";
 
 type StoreMeFooterProps = {
-    setFilter: (filter: string) => void;
-    getCategories: () => string[];
+    // Only the store page passes these; elsewhere the Shop column links to /store.
+    categories?: { value: StoreCategory; label: string }[];
+    onSelectCategory?: (category: StoreCategory) => void;
 };
 
 const MeStoreFooter = (
-    { setFilter, getCategories }: StoreMeFooterProps
+    { categories = [], onSelectCategory }: StoreMeFooterProps
 ) => {
     const [contactData, setContactData] = useState<ContactData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -43,19 +45,21 @@ const MeStoreFooter = (
                     <div>
                         <h3 className="text-xl font-bold mb-4">Shop</h3>
                         <ul className="space-y-2">
-                            {getCategories().slice(1).map((category) => (
-                                <li key={category}>
-                                    <button
-                                        onClick={() => {
-                                            setFilter(category);
-                                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                                        }}
-                                        className="text-gray-400 hover:text-white"
-                                    >
-                                        {category.charAt(0).toUpperCase() + category.slice(1)}
-                                    </button>
-                                </li>
-                            ))}
+                            {onSelectCategory && categories.length > 0 ? (
+                                categories.map(({ value, label }) => (
+                                    <li key={value}>
+                                        <button
+                                            type="button"
+                                            onClick={() => onSelectCategory(value)}
+                                            className="text-gray-400 hover:text-white"
+                                        >
+                                            {label}
+                                        </button>
+                                    </li>
+                                ))
+                            ) : (
+                                <li><Link href="/store" className="text-gray-400 hover:text-white">Browse store</Link></li>
+                            )}
                         </ul>
                     </div>
                     <div>

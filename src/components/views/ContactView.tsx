@@ -205,7 +205,7 @@ export default function ContactView({ contactData }: { contactData: ContactData 
             </div>
 
             {/* Footer */}
-            <MeStoreFooter setFilter={() => {}} getCategories={() => ['All']} />
+            <MeStoreFooter />
         </div>
     );
 }

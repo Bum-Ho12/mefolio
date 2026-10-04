@@ -114,7 +114,7 @@ export default function StoreItemPrivacyPage({
             </div>
 
             {/* Footer */}
-            <MeStoreFooter setFilter={() => {}} getCategories={() => ['All']} />
+            <MeStoreFooter />
         </div>
     );
 }
