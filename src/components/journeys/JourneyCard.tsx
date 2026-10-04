@@ -10,7 +10,7 @@ export function formatJourneyDate(date: string) {
     return isValid(parsed) ? format(parsed, 'MMM d, yyyy') : '';
 }
 
-export default function JourneyCard({ journey, sizes = '(max-width: 768px) 80vw, 33vw' }: { journey: JourneySummary; sizes?: string }) {
+export default function JourneyCard({ journey, sizes = '(max-width: 768px) 80vw, 33vw', priority = false }: { journey: JourneySummary; sizes?: string; priority?: boolean }) {
     return (
         <Link
             href={`/journeys/${journey.slug}`}
@@ -18,7 +18,7 @@ export default function JourneyCard({ journey, sizes = '(max-width: 768px) 80vw,
         >
             <div className="relative aspect-video overflow-hidden bg-white/5">
                 {journey.cover && (
-                    <Image src={journey.cover} alt="" fill sizes={sizes} className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <Image src={journey.cover} alt="" fill sizes={sizes} priority={priority} className="object-cover transition-transform duration-500 group-hover:scale-105" />
                 )}
             </div>
             <div className="flex flex-1 flex-col p-5">

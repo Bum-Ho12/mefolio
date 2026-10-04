@@ -195,8 +195,7 @@ export const DOC_TYPES: DocTypeDef[] = [
         previewDeps: ['journey'],
         paths: ['/', '/journeys'],
         fields: [
-            { ...hero[0], description: 'Heading of the home section and of the /journeys page.' },
-            ...hero.slice(1),
+            { kind: 'string', name: 'title', title: 'Title', required: true, description: 'Heading of the home section and of the /journeys page.' },
             { kind: 'text', name: 'description', title: 'Description', rows: 3 },
         ],
     },

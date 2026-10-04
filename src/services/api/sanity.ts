@@ -228,10 +228,7 @@ export async function getJourneysPage(): Promise<JourneysPageData> {
     const query = `{
         ...*[_type == "journeys"][0]{
             title,
-            description,
-            "heroImage": heroImage.asset->url,
-            heroTitle,
-            heroSubtitle
+            description
         },
         "journeys": *[${JOURNEY_FILTER}] | order(date desc){${JOURNEY_SUMMARY}}
     }`;
