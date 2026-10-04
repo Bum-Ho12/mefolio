@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const COUNT_DURATION = 2500; // Fastest the counter may go from 0 to 100
-const HOLD_AT_COMPLETE = 400; // Pause on 100% before the exit animation
+const COUNT_DURATION = 600; // Fastest the counter may go from 0 to 100
+const HOLD_AT_COMPLETE = 100; // Pause on 100% before the exit animation
 
 interface LoadingScreenProps {
     onLoadingComplete: () => void;
